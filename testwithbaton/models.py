@@ -3,7 +3,7 @@ from typing import List
 
 class IrodsUser:
     """
-    TODO
+    Model of an iRODS user.
     """
     def __init__(self, username: str, password: str, zone: str):
         self.username = username
@@ -13,7 +13,7 @@ class IrodsUser:
 
 class IrodsServer:
     """
-    TODO
+    Model of an iRODS server.
     """
     def __init__(self, container: dict, host: str, port: int, users: List[IrodsUser]):
         self.container = container

@@ -4,7 +4,7 @@ import tempfile
 
 from docker import Client
 
-from testwithbaton.irods_server import create_irods_config_volume
+from testwithbaton.irods_server import create_irods_server_connection_settings_volume
 from testwithbaton.models import IrodsServer
 
 
@@ -18,11 +18,10 @@ _BATON_DOCKER_REPOSITORY = "github.com/wtsi-hgi/docker-baton.git"
 
 def build_baton_docker(docker_client: Client):
     """
-    TODO
-    :param docker_client:
-    :return:
+    Builds the baton Docker image.
+    :param docker_client: the Docker client
     """
-    logging.info("Building baton test Docker image - if this is not cached, it could take a few minutes")
+    logging.info("Building baton test Docker image - if this is not cached, it will take a few minutes")
     # Note: reading the lines in this ways enforces that Python blocks - required
     response = [line for line in docker_client.build(tag=_BATON_DOCKER_TAG, path=_BATON_DOCKER_REPOSITORY, dockerfile=_BATON_DOCKER_FILE)]
     logging.debug(response)
@@ -30,20 +29,23 @@ def build_baton_docker(docker_client: Client):
 
 def create_baton_proxy_binaries(irods_test_server: IrodsServer) -> str:
     """
-    TODO
-    :return: directory... TODO
+    Creates binaries that act as proxies to the baton Docker. Allows realistic baton installation, where binaries are
+    called from a directory
+    :return: the directory containing the baton proxy binaries
     """
     temp_directory = tempfile.mkdtemp(prefix="baton-proxies-")
     logging.debug("Created temp directory for baton proxy binaries: %s" % temp_directory)
 
-    irods_config_volume = create_irods_config_volume(irods_test_server)
+    irods_config_volume = create_irods_server_connection_settings_volume(irods_test_server)
     user = irods_test_server.users[0]
 
     # Create proxies
     for binary in _BATON_BINARIES:
         file_path = os.path.join(temp_directory, binary)
         file = open(file_path, 'w')
-        file.write("docker run -it -v %s:/root/.irods -e _IRODS_TEST_SERVER_PASSWORD='%s' %s %s $?"
-                   % (irods_config_volume, user.password, _BATON_DOCKER_TAG, binary))
+        file.write("docker run -it -e IRODS_USERNAME=%s -e IRODS_HOST=%s -e IRODS_PORT=%d -e IRODS_ZONE=%s -e IRODS_PASSWORD='%s' %s %s $?"
+                   % (user.username, irods_test_server.host, irods_test_server.port, user.zone, user.password, _BATON_DOCKER_TAG, binary))
         file.close()
-        os.chmod(file_path, 700)
+        os.chmod(file_path, 0o770)
+
+    return temp_directory
