@@ -43,7 +43,7 @@ def create_baton_proxy_binaries(irods_test_server: IrodsServer) -> str:
     for binary in _BATON_BINARIES:
         file_path = os.path.join(temp_directory, binary)
         file = open(file_path, 'w')
-        file.write("docker run -it -e IRODS_USERNAME=%s -e IRODS_HOST=%s -e IRODS_PORT=%d -e IRODS_ZONE=%s -e IRODS_PASSWORD='%s' %s %s $?"
+        file.write("docker run -it -e IRODS_USERNAME=%s -e IRODS_HOST=%s -e IRODS_PORT=%d -e IRODS_ZONE=%s -e IRODS_PASSWORD='%s' %s %s $@"
                    % (user.username, irods_test_server.host, irods_test_server.port, user.zone, user.password, _BATON_DOCKER_TAG, binary))
         file.close()
         os.chmod(file_path, 0o770)
