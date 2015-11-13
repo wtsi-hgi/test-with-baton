@@ -1,3 +1,5 @@
+import os
+import tempfile
 from typing import Tuple
 
 from docker import Client
@@ -5,6 +7,8 @@ from docker import Client
 from testwithbaton import models
 from testwithbaton.common import create_unique_container_name, get_open_port, find_hostname
 from testwithbaton.models import IrodsUser, IrodsServer
+
+_IRODS_CONFIG_FILE_NAME = ".irodsEnv"
 
 _IRODS_USERNAME_PARAMETER_NAME = "irodsUserName"
 _IRODS_HOST_PARAMETER_NAME = "irodsHost"
@@ -47,6 +51,20 @@ def write_irods_server_connection_settings(write_to: str, irods_server: IrodsSer
     settings_file = open(write_to, 'w')
     settings_file.write(["%s %s\n" % x for x in config])
     settings_file.close()
+
+
+def create_irods_config_volume(irods_server: IrodsServer) -> str:
+    """
+    TODO
+    :param irods_server:
+    :return: the location of "volume" (i.e. directory) containing the configuration
+    """
+    file_handle, temp_directory = tempfile.mkstemp(suffix="irods-config")
+
+    connection_file = os.path.join(temp_directory, _IRODS_CONFIG_FILE_NAME)
+    write_irods_server_connection_settings(connection_file, irods_server)
+
+    return temp_directory
 
 
 def _create_irods_server_container(docker_client: Client) -> Tuple[dict, int]:
