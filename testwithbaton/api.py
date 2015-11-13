@@ -5,6 +5,10 @@ from testwithbaton.common import create_client
 from testwithbaton.irods_server import create_irods_test_server
 
 
+def setup_test_with_baton():
+    return TestWithBatonSetup()
+
+
 class TestWithBatonSetup:
     """
     TODO
