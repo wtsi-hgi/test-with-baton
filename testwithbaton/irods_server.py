@@ -1,13 +1,10 @@
 import logging
 import os
 import tempfile
-from logging import Logger
-from time import sleep
 from typing import Tuple
 
 from docker import Client
 
-from testwithbaton import models
 from testwithbaton.common import create_unique_container_name, get_open_port, find_hostname
 from testwithbaton.models import IrodsUser, IrodsServer
 
