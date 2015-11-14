@@ -9,16 +9,16 @@ iRODS database. These binaries can then be exploited in the testing of software 
 
 Thanks to the use [wtsi-hgi's baton Docker image](https://github.com/wtsi-hgi/docker-baton) and
 [agaveapi's iRODS server Docker image](https://hub.docker.com/r/agaveapi/irods/), the configuration of the test machine
-is not changed upon use of this software. Futhermore, setups can be simply thrown away after use. If a fresh setup, wit
+is not changed upon use of this software. Futhermore, setups can be simply thrown away after use. If a fresh setup, with
 a clean database, is used for each test case, a known test environment is ensured, thus reducing the "flakiness" of your
 tests.
  
 Each setup creates baton binaries<sup>*</sup> that are linked to a different iRODS server (running in Docker on an
 unused port). Therefore, tests cases may be ran in parallel without fear of interference between them.
 
-*<sup>*</sup>These binaries are not the real baton binaries, as baton is run inside a Docker image; they are instead "proxies" 
-to the real binaries. However, they produce the same results and therefore are indistinguishable to the SUT to a real
-baton installation.*
+<i><sup>*</sup>These binaries are not the real baton binaries, as baton is run inside a Docker image; they are instead
+"proxies" to the real binaries. However, they produce the same results and therefore are indistinguishable to the SUT to
+a real baton installation.</i>
 
 
 ## How to use in your project
@@ -32,7 +32,7 @@ baton installation.*
 test_with_baton = setup_test_with_baton()
 
 baton_binaries_location = test_with_baton.get_baton_binaries_location()
-# Do stuff with containerised baton via "proxies" in the `baton_binaries_location` directory.
+# Do stuff with containerised baton via "proxies" in the `baton_binaries_location` directory
 
 # Important: remember to tear down! Failure to do so will not kill the Docker daemon running the iRODS test server
 test_with_baton.tear_down()
