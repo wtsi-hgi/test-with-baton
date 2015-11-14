@@ -5,10 +5,6 @@ from testwithbaton.common import create_client
 from testwithbaton.irods_server import create_irods_test_server
 
 
-def setup_test_with_baton():
-    return TestWithBatonSetup()
-
-
 class TestWithBatonSetup:
     """
     TODO
@@ -53,5 +49,19 @@ class TestWithBatonSetup:
         return self._baton_binaries_location
 
     def tear_down(self):
+        """
+        TODO
+        """
         docker_client = create_client()
         docker_client.kill(self._irods_test_server.container)
+        # TODO: Clean-up temp folders
+
+
+def setup_test_with_baton() -> TestWithBatonSetup:
+    """
+    TODO
+    :return:
+    """
+    test_with_baton = TestWithBatonSetup()
+    test_with_baton.setup()
+    return test_with_baton
