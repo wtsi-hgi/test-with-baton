@@ -9,16 +9,21 @@ iRODS database. These binaries can then be exploited in the testing of software 
 
 Thanks to the use [wtsi-hgi's baton Docker image](https://github.com/wtsi-hgi/docker-baton) and
 [agaveapi's iRODS server Docker image](https://hub.docker.com/r/agaveapi/irods/), the configuration of the test machine
-is not changed and setups can be simply thrown away after use. If a fresh setup, with a clean database, is used for each
-test case, a clean test environment is ensured, thus reducing the "flakiness" of your tests.
+is not changed upon use of this software. Futhermore, setups can be simply thrown away after use. If a fresh setup, wit
+a clean database, is used for each test case, a known test environment is ensured, thus reducing the "flakiness" of your
+tests.
  
-Each setup creates baton binaries<sup>*</sup> that are linked to a different iRODS server (running on an unused port).
-Therefore, tests cases may be ran in parallel without fear of interference between them.
+Each setup creates baton binaries<sup>*</sup> that are linked to a different iRODS server (running in Docker on an
+unused port). Therefore, tests cases may be ran in parallel without fear of interference between them.
+
+*<sup>*</sup>These binaries are not the real baton binaries, as baton is run inside a Docker image; they are instead "proxies" 
+to the real binaries. However, they produce the same results and therefore are indistinguishable to the SUT to a real
+baton installation.*
 
 
 ## How to use in your project
-** A correctly configured Docker daemon must be running on your machine! **
-(If you do not know whether this is the case, try running `docker ps` (for example) via the command line.)
+**A correctly configured Docker daemon must be running on your machine!**
+(If you do not know whether this is the case, try running `docker ps` via the command line.)
 
 ### Python API
 ```bash
