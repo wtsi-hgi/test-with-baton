@@ -12,8 +12,10 @@ def main():
 
     test_with_baton = create_test_with_baton()
 
-    setup_information = {"baton": test_with_baton.get_baton_binaries_location()}
-    logging.info("Printing")
+    setup_information = {
+        "baton": test_with_baton.baton_location,
+        "icommands": test_with_baton.icommands_location
+    }
     print(json.dumps(setup_information))
 
     # `input()` is blocking therefore this is not a spin loop
