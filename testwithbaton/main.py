@@ -4,14 +4,15 @@ import signal
 
 import sys
 
-from testwithbaton.api import create_test_with_baton
+from testwithbaton.api import TestWithBatonSetup
 
 
 def main():
     """
     Main method.
     """
-    test_with_baton = create_test_with_baton()
+    test_with_baton = TestWithBatonSetup()
+    test_with_baton.setup()
 
     setup_information = {
         "baton": test_with_baton.baton_location,

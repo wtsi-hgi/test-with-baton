@@ -1,12 +1,13 @@
-import logging
-
 import atexit
-
+import logging
 import shutil
 
-from testwithbaton.proxies import build_baton_docker, create_baton_proxy_binaries, create_icommands_proxy_binaries
+from docker import Client
+
 from testwithbaton.common import create_client
 from testwithbaton.irods_server import create_irods_test_server
+from testwithbaton.models import IrodsServer
+from testwithbaton.proxies import build_baton_docker, create_baton_proxy_binaries, create_icommands_proxy_binaries
 
 
 class TestWithBatonSetup:
@@ -36,18 +37,12 @@ class TestWithBatonSetup:
         docker_client = create_client()
         build_baton_docker(docker_client)
 
-        irods_test_server = create_irods_test_server(docker_client)
-        docker_client.start(irods_test_server.container)
+        self._irods_test_server = create_irods_test_server(docker_client)
+        self._start_irods(docker_client, self._irods_test_server)
+
         build_baton_docker(docker_client)
-
-        logging.info("Starting iRODS server in Docker container on port: %d" % irods_test_server.port)
-        docker_client.start(irods_test_server.container)
-
-        self._irods_test_server = irods_test_server
-
-        self.baton_location = create_baton_proxy_binaries(irods_test_server)
-        self.icommands_location = create_icommands_proxy_binaries(irods_test_server)
-
+        self.baton_location = create_baton_proxy_binaries(self._irods_test_server)
+        self.icommands_location = create_icommands_proxy_binaries(self._irods_test_server)
 
     def tear_down(self):
         """
@@ -57,22 +52,31 @@ class TestWithBatonSetup:
             logging.debug("Killing client")
             docker_client = create_client()
             docker_client.kill(self._irods_test_server.container)
+            self._irods_test_server = None
 
             logging.debug("Removing temp folders")
             shutil.rmtree(self.baton_location)
+            self.baton_location = None
             shutil.rmtree(self.icommands_location)
+            self.icommands_location = None
 
         atexit.unregister(self.tear_down)
+        logging.debug("Tear down complete")
 
-        logging.debug("Tearing down complete")
-        # TODO: Clean-up temp folders
+    @staticmethod
+    def _start_irods(docker_client: Client, irods_test_server: IrodsServer):
+        """
+        TODO
+        :param docker_client:
+        :param irods_test_server:
+        :return:
+        """
+        logging.info("Starting iRODS server in Docker container on port: %d" % irods_test_server.port)
+        docker_client.start(irods_test_server.container)
 
-
-def create_test_with_baton() -> TestWithBatonSetup:
-    """
-    TODO
-    :return:
-    """
-    test_with_baton = TestWithBatonSetup()
-    test_with_baton.setup()
-    return test_with_baton
+        # Block until iRODS is setup
+        logging.info("Waiting for iRODS server to have setup")
+        for line in docker_client.logs(irods_test_server.container, stream=True):
+            logging.debug(line)
+            if "exited: irods" in str(line):
+                break
