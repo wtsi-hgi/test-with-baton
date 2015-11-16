@@ -22,6 +22,9 @@ def main():
         _print_tear_down_help()
         pass
 
+    # Ensure tear down
+    test_with_baton.tear_down()
+
 
 def _print_tear_down_help():
     """
