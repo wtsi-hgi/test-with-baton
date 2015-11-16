@@ -27,9 +27,11 @@ a real baton installation.</i>
 
 ### Python API
 ```bash
+from testwithbaton import create_test_with_baton, TestWithBatonSetup
+
 # Setup environment to test with baton - this could take a while on the first run (anticipate up to 10 minutes)!
 # Thanks to Docker's caching systems it should only take a couple of seconds after the first run
-test_with_baton = setup_test_with_baton()
+test_with_baton = create_test_with_baton()  # type: TestWithBatonSetup
 
 baton_binaries_location = test_with_baton.get_baton_binaries_location()
 # Do stuff with containerised baton via "proxies" in the `baton_binaries_location` directory
@@ -40,6 +42,18 @@ test_with_baton.tear_down()
 
 ### Running via the command line
 *TODO*
+
+
+### Setting up with PyCharm IDE
+The environment must be [setup for configurations in PyCharm]
+(https://www.jetbrains.com/pycharm/help/run-debug-configuration-python.html#d427982e277) that run projects that use
+`testwithbaton` in order for Docker to be used. In particular, `DOCKER_TLS_VERIFY`, `DOCKER_HOST` and `DOCKER_CERT_PATH`
+must be set. For example, the configuration's environment variables may include:
+```
+DOCKER_TLS_VERIFY=1
+DOCKER_HOST=tcp://192.168.99.100:2376
+DOCKER_CERT_PATH=/Users/you/.docker/machine/machines/default
+```
 
 
 ### Known issues

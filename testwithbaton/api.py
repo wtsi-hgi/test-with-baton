@@ -52,12 +52,13 @@ class TestWithBatonSetup:
         """
         TODO
         """
+        print("Tearing down!")
         docker_client = create_client()
         docker_client.kill(self._irods_test_server.container)
         # TODO: Clean-up temp folders
 
 
-def setup_test_with_baton() -> TestWithBatonSetup:
+def create_test_with_baton() -> TestWithBatonSetup:
     """
     TODO
     :return:
