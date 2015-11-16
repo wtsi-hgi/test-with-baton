@@ -25,7 +25,17 @@ to the SUT to a real baton installation.</i>
 **A correctly configured Docker daemon must be running on your machine!**
 (If you do not know whether this is the case, try running `docker ps` via the command line.)
 
-### Python API
+
+### With Python
+#### Including the `testwithbaton` library
+In ``/requirements.txt`` or in your ``/setup.py`` script:
+```
+git+https://github.com/wtsi-hgi/test-with-baton.git@master#egg=testwithbaton
+```
+*See more about using libraries for git repositories in the 
+[pip documentation](https://pip.readthedocs.org/en/1.1/requirements.html#git).*
+
+#### API
 ```bash
 from testwithbaton import TestWithBatonSetup
 
@@ -44,8 +54,9 @@ test_with_baton.tear_down()
 
 ```
 
-### Running via the command line
-To use outside of Python, run with:
+
+### Elsewhere
+To use outside of Python, run (from the repository's root directory) with:
 ```bash
 PYTHONPATH=. python3 testwithbaton/main.py
 ``` 
@@ -71,6 +82,20 @@ must be set. For example, the configuration's environment variables may include:
 DOCKER_TLS_VERIFY=1
 DOCKER_HOST=tcp://192.168.99.100:2376
 DOCKER_CERT_PATH=/Users/you/.docker/machine/machines/default
+```
+
+
+## How to develop
+### Testing
+#### Locally
+To run the tests, use ``./scripts/run-tests.sh`` from the project's root directory. This script will use ``pip`` to 
+install all requirements for running the tests (use `virtualenv` if necessary).
+
+#### Using Docker
+From the project's root directory:
+```
+$ docker build -t wtsi-hgi/testwithbaton/test -f docker/tests/Dockerfile .
+$ docker run wtsi-hgi/testwithbaton/test
 ```
 
 
