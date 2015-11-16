@@ -33,9 +33,9 @@ from testwithbaton import create_test_with_baton, TestWithBatonSetup
 # Thanks to Docker's caching systems it should only take a couple of seconds after the first run
 test_with_baton = create_test_with_baton()
 
-baton_binaries_location = test_with_baton.get_baton_binaries_location()
-icommands_binaries_location = test_with_baton.get_baton_binaries_location()
-# Do stuff with containerised baton via "proxies" in the `baton_binaries_location` directory. Can also use icommands.
+baton_location = test_with_baton.get_baton_binaries_location()
+icommands_location = test_with_baton.get_baton_binaries_location()
+# Do stuff with containerised baton via "proxies" in the `baton_location` directory. Can also use icommands.
 
 # Tear down tests. `TestWithBatonSetup` uses `atexit` (https://docs.python.org/3/library/atexit.html) in the attempt to
 # ensure this is always done eventually, even if forgotten about/a failure occurs.
@@ -44,7 +44,21 @@ test_with_baton.tear_down()
 ```
 
 ### Running via the command line
-*TODO*
+To use outside of Python, run with:
+```bash
+PYTHONPATH=. python3 testwithbaton/testwithbaton.py
+``` 
+
+The program will setup and then output (on one line):
+```json
+{
+    "baton": test_with_baton.baton_location,
+    "icommands": test_with_baton.icommands_location
+}
+```
+
+It will then block, keeping the test environment alive, until it receives a `SIGHUP` signal. Upon receipt of this
+signal, the test environment is torn down and then the program will exit.
 
 
 ### Setting up with PyCharm IDE
