@@ -1,5 +1,7 @@
 import logging
 
+import atexit
+
 from testwithbaton.baton_proxies import build_baton_docker, create_baton_proxy_binaries
 from testwithbaton.common import create_client
 from testwithbaton.irods_server import create_irods_test_server
@@ -24,6 +26,8 @@ class TestWithBatonSetup:
         if self._baton_binaries_location is not None:
             raise RuntimeError("Already setup")
         assert self._irods_test_server is None
+
+        atexit.register(self.tear_down)
 
         docker_client = create_client()
 
@@ -52,9 +56,12 @@ class TestWithBatonSetup:
         """
         TODO
         """
-        print("Tearing down!")
-        docker_client = create_client()
-        docker_client.kill(self._irods_test_server.container)
+        logging.info("Tearing down setup!")
+        if self._irods_test_server is not None:
+            docker_client = create_client()
+            docker_client.kill(self._irods_test_server.container)
+
+        atexit.unregister(self.tear_down)
         # TODO: Clean-up temp folders
 
 

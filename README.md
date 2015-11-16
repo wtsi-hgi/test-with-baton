@@ -31,13 +31,15 @@ from testwithbaton import create_test_with_baton, TestWithBatonSetup
 
 # Setup environment to test with baton - this could take a while on the first run (anticipate up to 10 minutes)!
 # Thanks to Docker's caching systems it should only take a couple of seconds after the first run
-test_with_baton = create_test_with_baton()  # type: TestWithBatonSetup
+test_with_baton = create_test_with_baton()
 
 baton_binaries_location = test_with_baton.get_baton_binaries_location()
 # Do stuff with containerised baton via "proxies" in the `baton_binaries_location` directory
 
-# Important: remember to tear down! Failure to do so will not kill the Docker daemon running the iRODS test server
+# Tear down tests. `TestWithBatonSetup` uses `atexit` (https://docs.python.org/3/library/atexit.html) in the attempt to
+# ensure this is always done eventually, even if forgotten about/a failure occurs.
 test_with_baton.tear_down()
+
 ```
 
 ### Running via the command line
@@ -56,7 +58,7 @@ DOCKER_CERT_PATH=/Users/you/.docker/machine/machines/default
 ```
 
 
-### Known issues
+## Known issues
 [Issue 1](https://github.com/wtsi-hgi/test-with-baton/issues/1): It is currently hardcoded to use
 [baton version 0.16.1](https://github.com/wtsi-npg/baton/tree/release-0.16.1) and
 [iRODS version 3.3.1](https://github.com/irods/irods-legacy).
