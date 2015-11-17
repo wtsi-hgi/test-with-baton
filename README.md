@@ -67,7 +67,7 @@ The program will setup and then output (on one line):
 ```json
 {
     "baton": "<baton_location>",
-    "icommands": "<test_with_baton.icommands_location>"
+    "icommands": "<icommands_location>"
 }
 ```
 
