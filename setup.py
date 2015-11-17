@@ -19,5 +19,5 @@ setup(
 
     install_requires=open("requirements.txt").read().splitlines(),
 
-#    test_suite="sequencescape.testing"
+    test_suite="sequencescape.tests"
 )
