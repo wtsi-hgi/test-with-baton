@@ -2,6 +2,7 @@ import atexit
 import logging
 import shutil
 
+import sys
 from docker import Client
 
 from testwithbaton.common import create_client
@@ -51,13 +52,22 @@ class TestWithBatonSetup:
         if self._irods_test_server is not None:
             logging.debug("Killing client")
             docker_client = create_client()
-            docker_client.kill(self._irods_test_server.container)
+            try:
+                docker_client.kill(self._irods_test_server.container)
+            except Exception as error:
+                logging.error(error)
             self._irods_test_server = None
 
             logging.debug("Removing temp folders")
-            shutil.rmtree(self.baton_location)
+            try:
+                shutil.rmtree(self.baton_location)
+            except Exception as error:
+                logging.error(error)
             self.baton_location = None
-            shutil.rmtree(self.icommands_location)
+            try:
+                shutil.rmtree(self.icommands_location)
+            except Exception as error:
+                logging.error(error)
             self.icommands_location = None
 
         atexit.unregister(self.tear_down)

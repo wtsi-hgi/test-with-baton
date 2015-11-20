@@ -1,7 +1,6 @@
 import json
 import logging
 import signal
-
 import sys
 
 from testwithbaton.api import TestWithBatonSetup

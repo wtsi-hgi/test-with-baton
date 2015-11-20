@@ -1,7 +1,8 @@
 import logging
 import os
 import tempfile
-from typing import List, Tuple, Optional
+from typing import List
+
 from docker import Client
 
 from testwithbaton.models import IrodsServer
@@ -97,5 +98,3 @@ def _create_docker_run_command(irods_test_server: IrodsServer, binary_name: str,
 
     return "docker run -i --rm -e IRODS_USERNAME='%s' -e IRODS_HOST='%s' -e IRODS_PORT=%d -e IRODS_ZONE='%s' -e IRODS_PASSWORD='%s' %s %s %s" \
            % (user.username, irods_test_server.host, irods_test_server.port, user.zone, user.password, other, _BATON_DOCKER_TAG, to_execute)
-
-
