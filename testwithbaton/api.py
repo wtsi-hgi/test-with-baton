@@ -20,17 +20,17 @@ class TestWithBatonSetup:
         """
         Default constructor.
         """
-        self._irods_test_server = None
+        self.irods_test_server = None
         self.baton_location = None
         self.icommands_location = None
 
     def setup(self):
         """
-        TODO
+        Setup the test enviornment.
         """
         if self.baton_location is not None:
             raise RuntimeError("Already setup")
-        assert self._irods_test_server is None
+        assert self.irods_test_server is None
 
         # Ensure that no matter what happens, tear down is done
         atexit.register(self.tear_down)
@@ -38,32 +38,35 @@ class TestWithBatonSetup:
         docker_client = create_client()
         build_baton_docker(docker_client)
 
-        self._irods_test_server = create_irods_test_server(docker_client)
-        self._start_irods(docker_client, self._irods_test_server)
+        self.irods_test_server = create_irods_test_server(docker_client)
+        self._start_irods(docker_client, self.irods_test_server)
 
         build_baton_docker(docker_client)
-        self.baton_location = create_baton_proxy_binaries(self._irods_test_server)
-        self.icommands_location = create_icommands_proxy_binaries(self._irods_test_server)
+        self.baton_location = create_baton_proxy_binaries(self.irods_test_server)
+        self.icommands_location = create_icommands_proxy_binaries(self.irods_test_server)
 
     def tear_down(self):
         """
-        TODO
+        Tear down the test environment.
         """
-        if self._irods_test_server is not None:
+        if self.irods_test_server is not None:
             logging.debug("Killing client")
             docker_client = create_client()
             try:
-                docker_client.kill(self._irods_test_server.container)
+                docker_client.kill(self.irods_test_server.container)
             except Exception as error:
                 logging.error(error)
-            self._irods_test_server = None
+            self.irods_test_server = None
 
             logging.debug("Removing temp folders")
+            assert self.baton_location is not None
             try:
                 shutil.rmtree(self.baton_location)
             except Exception as error:
                 logging.error(error)
             self.baton_location = None
+
+            assert self.icommands_location is not None
             try:
                 shutil.rmtree(self.icommands_location)
             except Exception as error:
