@@ -1,13 +1,12 @@
 import logging
 import os
 import tempfile
-
+from typing import List, Tuple, Optional
 from docker import Client
-from typing import List
 
-from testwithbaton.irods_server import create_irods_server_connection_settings_volume
 from testwithbaton.models import IrodsServer
 
+_SHEBANG = "#!/usr/bin/env bash"
 
 _BATON_BINARIES = ["baton", "baton-metaquery", "baton-get", "baton-chmod", "baton-list", "baton-metamod"]
 _ICOMMAND_BINARIES = ["ibun", "icd", "ichksum", "ichmod", "icp", "idbug", "ienv", "ierror", "iexecmd", "iexit", "ifsck",
@@ -61,15 +60,41 @@ def create_proxy_binaries(irods_test_server: IrodsServer, directory_prefix: str,
     temp_directory = tempfile.mkdtemp(prefix=directory_prefix)
     logging.debug("Created temp directory for proxy binaries: %s" % temp_directory)
 
-    user = irods_test_server.users[0]
     # Create proxies
     for binary in binaries:
         file_path = os.path.join(temp_directory, binary)
         file = open(file_path, 'w')
-        file.write("#!/usr/bin/env bash\n")
-        file.write("docker run -i -e IRODS_USERNAME=%s -e IRODS_HOST=%s -e IRODS_PORT=%d -e IRODS_ZONE=%s -e IRODS_PASSWORD='%s' %s %s $@"
-                   % (user.username, irods_test_server.host, irods_test_server.port, user.zone, user.password, _BATON_DOCKER_TAG, binary))
+        file.write("%s\n" % _SHEBANG)
+
+        if binary == "iput":
+            # FIXME: allow other flags
+            file.write("""
+                    cd $(dirname "$1")
+                    mountDirectory=$PWD
+                    fileName=$(basename "$1")
+                    %s
+            """ % (
+                _create_docker_run_command(irods_test_server, binary, other="-v \"$mountDirectory\":/tmp/input:ro", docker_command="\"/tmp/input/$fileName\"")
+            ))
+        else:
+            file.write("%s\n" % _create_docker_run_command(irods_test_server, binary))
         file.close()
         os.chmod(file_path, 0o770)
 
     return temp_directory
+
+
+def _create_docker_run_command(irods_test_server: IrodsServer, binary_name: str, docker_command: str="$@", other: str="") -> str:
+    """
+    TODO
+    :param irods_test_server:
+    :param binary_name:
+    :param mount:
+    :param docker_command:
+    :return:
+    """
+    to_execute = "\"%s\" \"%s\"" % (binary_name.replace('"', '\\"'), docker_command.replace('"', '\\"'))
+    user = irods_test_server.users[0]
+
+    return "docker run -i -e IRODS_USERNAME='%s' -e IRODS_HOST='%s' -e IRODS_PORT=%d -e IRODS_ZONE='%s' -e IRODS_PASSWORD='%s' %s %s %s" \
+           % (user.username, irods_test_server.host, irods_test_server.port, user.zone, user.password, other, _BATON_DOCKER_TAG, to_execute)
