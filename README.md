@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/wtsi-hgi/test-with-baton.svg)](https://travis-ci.org/wtsi-hgi/test-with-baton)
-
 # Test with baton
 Simplifying the testing of software that depends on [baton](https://github.com/wtsi-npg/baton).
 
@@ -7,7 +5,8 @@ Simplifying the testing of software that depends on [baton](https://github.com/w
 ## Introduction
 Compiling and configuring both baton and an iRODS server is not a trivial task. This software has been created to manage
 all of this and leave the developer with a directory containing baton binaries<sup>*</sup>, configured to use an empty
-iRODS database. These binaries can then be exploited in the testing of software that uses baton. 
+iRODS database. These binaries can then be exploited in the testing of software that uses baton or just seeing how
+iRODS and baton work in a safe environment.
 
 Thanks to the use [wtsi-hgi's baton Docker image](https://github.com/wtsi-hgi/docker-baton) and
 [agaveapi's iRODS server Docker image](https://hub.docker.com/r/agaveapi/irods/), the configuration of the test machine
@@ -60,6 +59,7 @@ test_with_baton.tear_down()
 ### Elsewhere
 To use outside of Python, run (from the repository's root directory) with:
 ```bash
+pip3 install -r requirements.txt
 PYTHONPATH=. python3 testwithbaton/main.py
 ``` 
 

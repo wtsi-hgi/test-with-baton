@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 
 class IrodsUser:
@@ -20,3 +20,12 @@ class IrodsServer:
         self.host = host
         self.port = port
         self.users = users
+
+
+class Metadata:
+    """
+    Model of a unit of metadata
+    """
+    def __init__(self, attribute: str, value: Any):
+        self.attribute = attribute
+        self.value = value
