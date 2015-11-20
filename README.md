@@ -52,7 +52,15 @@ icommands_location = test_with_baton.icommands_location
 # Tear down tests. `TestWithBatonSetup` uses `atexit` (https://docs.python.org/3/library/atexit.html) in the attempt to
 # ensure this is always done eventually, even if forgotten about/a failure occurs.
 test_with_baton.tear_down()
+```
 
+To help with the setup of tests, a number of Python setup helper methods are available:
+```python
+setup_helper = SetupHelper("icommands_location")
+setup_helper.create_irods_file("file_name", file_contents="contents"):
+setup_helper.create_irods_collection("collection_name"):
+setup_helper.add_irods_metadata_to_file("file_name", Metadata("attribute", "value"):
+setup_helper.run_icommand("icommand_binary", command_arguments=["any", "arguments"], error_if_stdout=False)
 ```
 
 

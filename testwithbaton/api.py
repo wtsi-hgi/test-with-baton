@@ -20,9 +20,9 @@ class TestWithBatonSetup:
         """
         Default constructor.
         """
-        self.irods_test_server = None
-        self.baton_location = None
-        self.icommands_location = None
+        self.irods_test_server = None   # type: IrodsServer
+        self.baton_location = None  # type: str
+        self.icommands_location = None  # type: str
 
     def setup(self):
         """
