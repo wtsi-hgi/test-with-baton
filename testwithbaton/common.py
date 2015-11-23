@@ -48,11 +48,11 @@ def find_hostname(docker_client: Client) -> str:
 
 def get_open_port() -> int:
     """
-    Gets a port that will (probably) be available on the machine.
+    Gets a PORT that will (probably) be available on the machine.
 
-    It is possible that in-between the time in which the open port of found and when it is used, another process may
+    It is possible that in-between the time in which the open PORT of found and when it is used, another process may
     bind to it instead.
-    :return: the (probably) available port
+    :return: the (probably) available PORT
     """
     free_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     free_socket.bind(("", 0))

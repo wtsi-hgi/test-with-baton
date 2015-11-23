@@ -39,6 +39,7 @@ git+https://github.com/wtsi-hgi/test-with-baton.git@master#egg=testwithbaton
 [pip documentation](https://pip.readthedocs.org/en/1.1/requirements.html#git).*
 
 #### API
+Basic usage:
 ```python
 from testwithbaton import TestWithBatonSetup
 
@@ -56,18 +57,31 @@ icommands_location = test_with_baton.icommands_location
 test_with_baton.tear_down()
 ```
 
-If you wish to use a pre-existing iRODS server:
+It is possible to use a pre-existing iRODS server in tests. This will make it quicker to run tests but the state of the
+environment that they run in can no longer be guaranteed, potentially making your tests flaky.
 ```python
 from testwithbaton import TestWithBatonSetup, IrodsServer, IrodsUser
 
 # Define the configuration of the pre-existing iRODS server
-irods_server = IrodsServer("host", "port", [IrodsUser("username", "password", "zone)])
+irods_server = IrodsServer("host", "port", [IrodsUser("username", "password", "zone")])
 
 # Setup test with baton
 test_with_baton = TestWithBatonSetup(irods_server)
 test_with_baton.setup()
 
 # Do testing
+```
+
+In addition, a pre-existing iRODS server, defined through environment variables, can be optionally used if setup. This
+could be useful to speed up the running of tests during development but can be "turned off" during CI testing, with no
+additional code.
+```python 
+from testwithbaton import TestWithBatonSetup, get_irods_server_from_environment_if_defined
+
+# Pre-existing iRODS server used if all of the following environment variables are set:
+# IRODS_HOST, IRODS_PORT, IRODS_USERNAME, IRODS_PASSWORD, IRODS_ZONE
+test_with_baton = TestWithBatonSetup(get_irods_server_from_environment_if_defined())
+test_with_baton.setup()
 ```
 
 To help with the setup of tests, a number of Python setup helper methods are available:
@@ -109,9 +123,3 @@ DOCKER_TLS_VERIFY=1
 DOCKER_HOST=tcp://192.168.99.100:2376
 DOCKER_CERT_PATH=/Users/you/.docker/machine/machines/default
 ```
-
-
-## Known issues
-[Issue 1](https://github.com/wtsi-hgi/test-with-baton/issues/1): It is currently hardcoded to use
-[baton version 0.16.1](https://github.com/wtsi-npg/baton/tree/release-0.16.1) and
-[iRODS version 3.3.1](https://github.com/irods/irods-legacy).

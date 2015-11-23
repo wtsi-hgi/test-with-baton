@@ -41,7 +41,7 @@ def start_irods(docker_client: Client, irods_test_server: ContainerisedIrodsServ
     :param docker_client: the Docker client used to start the server
     :param irods_test_server: the server setup
     """
-    logging.info("Starting iRODS server in Docker container on port: %d" % irods_test_server.port)
+    logging.info("Starting iRODS server in Docker container on PORT: %d" % irods_test_server.port)
     docker_client.start(irods_test_server.container)
 
     # Block until iRODS is setup
@@ -94,7 +94,7 @@ def _create_irods_server_container(docker_client: Client) -> Tuple[dict, int]:
     """
     Create iRODs test server.
     :param docker_client: the Docker client
-    :return: a tuple where the first element is the created iRODS container and the second is the port that it is
+    :return: a tuple where the first element is the created iRODS container and the second is the PORT that it is
     connected to the local machine on
     """
     open_port = get_open_port()
