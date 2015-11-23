@@ -103,7 +103,7 @@ class TestGetIrodsServerFromEnvironmentIfDefined(unittest.TestCase):
 
         irods_server = get_irods_server_from_environment_if_defined()
         self.assertEquals(irods_server.host, TestGetIrodsServerFromEnvironmentIfDefined.HOST)
-        self.assertEquals(irods_server.port, TestGetIrodsServerFromEnvironmentIfDefined.PORT)
+        self.assertEquals(irods_server.port, int(TestGetIrodsServerFromEnvironmentIfDefined.PORT))
         self.assertEquals(irods_server.users[0].username, TestGetIrodsServerFromEnvironmentIfDefined.USERNAME)
         self.assertEquals(irods_server.users[0].password, TestGetIrodsServerFromEnvironmentIfDefined.PASSWORD)
         self.assertEquals(irods_server.users[0].zone, TestGetIrodsServerFromEnvironmentIfDefined.ZONE)
@@ -113,11 +113,10 @@ class TestGetIrodsServerFromEnvironmentIfDefined(unittest.TestCase):
 
     @staticmethod
     def _clean_environment():
-        os.environ[irodsEnvironmentKey.IRODS_HOST.value] = ""
-        os.environ[irodsEnvironmentKey.IRODS_PORT.value] = ""
-        os.environ[irodsEnvironmentKey.IRODS_USERNAME.value] = ""
-        os.environ[irodsEnvironmentKey.IRODS_PASSWORD.value] = ""
-        os.environ[irodsEnvironmentKey.IRODS_ZONE.value] = ""
+        for key in irodsEnvironmentKey:
+            value = os.environ.get(key.value)
+            if value is not None:
+                del os.environ[key.value]
 
 
 if __name__ == '__main__':

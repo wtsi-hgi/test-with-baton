@@ -16,6 +16,8 @@ class IrodsServer:
     Model of an iRODS server.
     """
     def __init__(self, host: str, port: int, users: List[IrodsUser]):
+        if not isinstance(port, int):
+            raise ValueError("Port number must be an integer - `%` given" % port.__class__)
         self.host = host
         self.port = port
         self.users = users
