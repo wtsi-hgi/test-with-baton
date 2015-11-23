@@ -6,7 +6,7 @@ from typing import Tuple
 from docker import Client
 
 from testwithbaton.common import create_unique_container_name, get_open_port, find_hostname
-from testwithbaton.models import IrodsUser, IrodsServer
+from testwithbaton.models import IrodsUser, ContainerisedIrodsServer, IrodsServer
 
 _IRODS_CONFIG_FILE_NAME = ".irodsEnv"
 
@@ -22,7 +22,7 @@ _IRODS_TEST_SERVER_PASSWORD = "testuser"
 _IRODS_TEST_SERVER_ZONE = "iplant"
 
 
-def create_irods_test_server(docker_client: Client) -> IrodsServer:
+def create_irods_test_server(docker_client: Client) -> ContainerisedIrodsServer:
     """
     Creates an iRODS test server in a Docker container.
     :param docker_client: a Docker client
@@ -32,7 +32,24 @@ def create_irods_test_server(docker_client: Client) -> IrodsServer:
     hostname = find_hostname(docker_client)
     users = [IrodsUser(_IRODS_TEST_SERVER_USERNAME, _IRODS_TEST_SERVER_PASSWORD, _IRODS_TEST_SERVER_ZONE)]
 
-    return IrodsServer(container, hostname, port, users)
+    return ContainerisedIrodsServer(container, hostname, port, users)
+
+
+def start_irods(docker_client: Client, irods_test_server: ContainerisedIrodsServer):
+    """
+    Starts iRODS server.
+    :param docker_client: the Docker client used to start the server
+    :param irods_test_server: the server setup
+    """
+    logging.info("Starting iRODS server in Docker container on port: %d" % irods_test_server.port)
+    docker_client.start(irods_test_server.container)
+
+    # Block until iRODS is setup
+    logging.info("Waiting for iRODS server to have setup")
+    for line in docker_client.logs(irods_test_server.container, stream=True):
+        logging.debug(line)
+        if "exited: irods" in str(line):
+            break
 
 
 def write_irods_server_connection_settings(write_settings_file_to: str, irods_server: IrodsServer):

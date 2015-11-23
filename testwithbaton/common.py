@@ -54,9 +54,9 @@ def get_open_port() -> int:
     bind to it instead.
     :return: the (probably) available port
     """
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("", 0))
-    s.listen(1)
-    port = s.getsockname()[1]
-    s.close()
+    free_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    free_socket.bind(("", 0))
+    free_socket.listen(1)
+    port = free_socket.getsockname()[1]
+    free_socket.close()
     return port

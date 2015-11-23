@@ -15,11 +15,19 @@ class IrodsServer:
     """
     Model of an iRODS server.
     """
-    def __init__(self, container: dict, host: str, port: int, users: List[IrodsUser]):
-        self.container = container
+    def __init__(self, host: str, port: int, users: List[IrodsUser]):
         self.host = host
         self.port = port
         self.users = users
+
+
+class ContainerisedIrodsServer(IrodsServer):
+    """
+    Model of an iRODS server that runs in a container.
+    """
+    def __init__(self, container: dict, host: str, port: int, users: List[IrodsUser]):
+        super(ContainerisedIrodsServer, self).__init__(host, port, users)
+        self.container = container
 
 
 class Metadata:

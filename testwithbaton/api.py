@@ -1,47 +1,54 @@
 import atexit
 import logging
 import shutil
-
-import sys
-from docker import Client
+from enum import Enum, unique
 
 from testwithbaton.common import create_client
-from testwithbaton.irods_server import create_irods_test_server
+from testwithbaton.irods_server import create_irods_test_server, start_irods
 from testwithbaton.models import IrodsServer
 from testwithbaton.proxies import build_baton_docker, create_baton_proxy_binaries, create_icommands_proxy_binaries
 
 
+@unique
+class _SetupState(Enum):
+    """
+    States of a `TestWithBatonSetup` instance.
+    """
+    INIT = 0,
+    RUNNING = 1,
+    STOPPED = 2
+
+
 class TestWithBatonSetup:
     """
-    TODO
+    A setup for testing with baton.
     """
-    # TODO: Allow settings
-    def __init__(self):
+    # TODO: Allow setting what irods test server to create if none given
+    def __init__(self, irods_test_server: IrodsServer=None):
         """
         Default constructor.
+        :param irods_test_server: a pre-configured, running iRODS server to use in the tests
         """
-        self.irods_test_server = None   # type: IrodsServer
-        self.baton_location = None  # type: str
-        self.icommands_location = None  # type: str
-
-    def setup(self):
-        """
-        Setup the test enviornment.
-        """
-        if self.baton_location is not None:
-            raise RuntimeError("Already setup")
-        assert self.irods_test_server is None
-
         # Ensure that no matter what happens, tear down is done
         atexit.register(self.tear_down)
 
+        self.irods_test_server = irods_test_server
+        self._external_irods_test_server = irods_test_server is not None
+        self._state = _SetupState.INIT
+
+    def setup(self):
+        if self._state != _SetupState.INIT:
+            raise RuntimeError("Already been setup")
+        self._state = _SetupState.RUNNING
+
+        # Build baton Docker
         docker_client = create_client()
         build_baton_docker(docker_client)
 
-        self.irods_test_server = create_irods_test_server(docker_client)
-        self._start_irods(docker_client, self.irods_test_server)
+        if not self._external_irods_test_server:
+            self.irods_test_server = create_irods_test_server(docker_client)
+            start_irods(docker_client, self.irods_test_server)
 
-        build_baton_docker(docker_client)
         self.baton_location = create_baton_proxy_binaries(self.irods_test_server)
         self.icommands_location = create_icommands_proxy_binaries(self.irods_test_server)
 
@@ -49,47 +56,43 @@ class TestWithBatonSetup:
         """
         Tear down the test environment.
         """
-        if self.irods_test_server is not None:
-            logging.debug("Killing client")
-            docker_client = create_client()
-            try:
-                docker_client.kill(self.irods_test_server.container)
-            except Exception as error:
-                logging.error(error)
-            self.irods_test_server = None
+        if self._state == _SetupState.RUNNING:
+            self._state = _SetupState.STOPPED
+            atexit.unregister(self.tear_down)
+
+            if not self._external_irods_test_server:
+                self._tear_down_irods_test_server()
+            else:
+                logging.debug("External iRODS test server used - not tearing down")
 
             logging.debug("Removing temp folders")
-            assert self.baton_location is not None
-            try:
-                shutil.rmtree(self.baton_location)
-            except Exception as error:
-                logging.error(error)
+            TestWithBatonSetup._tear_down_temp_directory(self.baton_location)
+            TestWithBatonSetup._tear_down_temp_directory(self.icommands_location)
             self.baton_location = None
-
-            assert self.icommands_location is not None
-            try:
-                shutil.rmtree(self.icommands_location)
-            except Exception as error:
-                logging.error(error)
             self.icommands_location = None
 
-        atexit.unregister(self.tear_down)
-        logging.debug("Tear down complete")
+            logging.debug("Tear down complete")
+
+    def _tear_down_irods_test_server(self):
+        """
+        Tears down the iRODS test server.
+        """
+        assert not self._external_irods_test_server
+        logging.debug("Killing iRODS test server")
+        docker_client = create_client()
+        try:
+            docker_client.kill(self.irods_test_server.container)
+        except Exception as error:
+            logging.error(error)
+        self.irods_test_server = None
 
     @staticmethod
-    def _start_irods(docker_client: Client, irods_test_server: IrodsServer):
+    def _tear_down_temp_directory(directory: str):
         """
-        TODO
-        :param docker_client:
-        :param irods_test_server:
-        :return:
+        Safely tears down the given temporary directory.
+        :param directory: the directory to tear down
         """
-        logging.info("Starting iRODS server in Docker container on port: %d" % irods_test_server.port)
-        docker_client.start(irods_test_server.container)
-
-        # Block until iRODS is setup
-        logging.info("Waiting for iRODS server to have setup")
-        for line in docker_client.logs(irods_test_server.container, stream=True):
-            logging.debug(line)
-            if "exited: irods" in str(line):
-                break
+        try:
+            shutil.rmtree(directory)
+        except Exception as error:
+            logging.error(error)

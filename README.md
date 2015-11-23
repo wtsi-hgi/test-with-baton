@@ -5,21 +5,23 @@ Simplifying the testing of software that depends on [baton](https://github.com/w
 ## Introduction
 Compiling and configuring both baton and an iRODS server is not a trivial task. This software has been created to manage
 all of this and leave the developer with a directory containing baton binaries<sup>*</sup>, configured to use an empty
-iRODS database. These binaries can then be exploited in the testing of software that uses baton or just seeing how
-iRODS and baton work in a safe environment.
+iRODS database by default. These binaries can then be exploited in the testing of software that uses baton or just
+seeing how iRODS and baton work in a safe environment.
 
 Thanks to the use [wtsi-hgi's baton Docker image](https://github.com/wtsi-hgi/docker-baton) and
 [agaveapi's iRODS server Docker image](https://hub.docker.com/r/agaveapi/irods/), the configuration of the test machine
-is not changed upon use of this software. Futhermore, setups can be simply thrown away after use. If a fresh setup, with
-a clean database, is used for each test case, a known test environment is ensured, thus reducing the "flakiness" of your
-tests.
+is not changed upon use of this software. 
 
-Each setup creates baton binaries<sup>*</sup> that are linked to a new iRODS server (running in Docker on an unused
-port). Therefore, tests cases may be ran in parallel without fear of interference between them.
+By default, a new iRODS server (running in Docker on an unused port), with a clean database, is used. If this fresh
+setup is exploited for each test case, a known test environment is ensured, thus reducing the "flakiness" of your tests.
+However, if desired, a pre-existing iRODS setup can be used.
+
+Each setup creates baton binaries<sup>*</sup> that are linked to the iRODS server. Therefore, tests cases may be ran in
+parallel without fear of interference between them.
 
 <i><sup>*</sup> These binaries are not the real baton binaries, as baton is run inside a Docker image; they are instead
 transparent "proxies" to the real binaries. However, they produce the same results and therefore are indistinguishable
-to the SUT to a real baton installation.</i>
+in the eyes of the SUT to a real baton installation.</i>
 
 
 ## How to use in your project
@@ -37,21 +39,35 @@ git+https://github.com/wtsi-hgi/test-with-baton.git@master#egg=testwithbaton
 [pip documentation](https://pip.readthedocs.org/en/1.1/requirements.html#git).*
 
 #### API
-```bash
+```python
 from testwithbaton import TestWithBatonSetup
 
-# Setup environment to test with baton - this could take a while on the first run (anticipate up to 10 minutes)!
+# Setup environment to test with baton - this could take a while on the first run (anticipate more than 2 minutes)!
 # Thanks to Docker's caching systems it should only take a couple of seconds after the first run
 test_with_baton = TestWithBatonSetup()
 test_with_baton.setup()
 
 baton_location = test_with_baton.baton_location
 icommands_location = test_with_baton.icommands_location
-# Do stuff with containerised baton via "proxies" in the `baton_location` directory. Can also use icommands.
+# Do stuff with containerised baton via "proxies" in the `baton_location` directory. Can also use icommands
 
 # Tear down tests. `TestWithBatonSetup` uses `atexit` (https://docs.python.org/3/library/atexit.html) in the attempt to
-# ensure this is always done eventually, even if forgotten about/a failure occurs.
+# ensure this is always done eventually, even if forgotten about/a failure occurs
 test_with_baton.tear_down()
+```
+
+If you wish to use a pre-existing iRODS server:
+```python
+from testwithbaton import TestWithBatonSetup, IrodsServer, IrodsUser
+
+# Define the configuration of the pre-existing iRODS server
+irods_server = IrodsServer("host", "port", [IrodsUser("username", "password", "zone)])
+
+# Setup test with baton
+test_with_baton = TestWithBatonSetup(irods_server)
+test_with_baton.setup()
+
+# Do testing
 ```
 
 To help with the setup of tests, a number of Python setup helper methods are available:
