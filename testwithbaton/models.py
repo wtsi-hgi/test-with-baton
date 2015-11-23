@@ -17,7 +17,7 @@ class IrodsServer:
     """
     def __init__(self, host: str, port: int, users: List[IrodsUser]):
         if not isinstance(port, int):
-            raise ValueError("Port number must be an integer - `%` given" % port.__class__)
+            raise ValueError("Port number must be an integer - `%s` given" % port.__class__)
         self.host = host
         self.port = port
         self.users = users
@@ -32,6 +32,7 @@ class ContainerisedIrodsServer(IrodsServer):
         self.container = container
 
 
+# FIXME: Duplicated from `baton-python-wrapper`
 class Metadata:
     """
     Model of a unit of metadata
@@ -39,3 +40,13 @@ class Metadata:
     def __init__(self, attribute: str, value: Any):
         self.attribute = attribute
         self.value = value
+
+# FIXME: Duplicated from `baton-python-wrapper`
+class IrodsFile:
+    """
+    Model of an iRODS file.
+    """
+    def __init__(self, directory: str, file_name: str):
+        self.directory = directory
+        self.file_name = file_name
+

@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 from typing import List
 
-from testwithbaton.models import Metadata
+from testwithbaton.models import Metadata, IrodsFile
 
 
 class SetupHelper:
@@ -18,13 +18,17 @@ class SetupHelper:
         """
         self.icommands_location = icommands_location
 
-    def create_irods_file(self, file_name: str, file_contents: str= ""):
+    def create_irods_file(self, file_name: str, file_contents: str= "") -> IrodsFile:
         """
         Creates a test data object file on iRODS with the given name and contents.
         :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
         :param file_name: the name of the file to create
         :param file_contents: the contents of the file to create
+        :return: the file created
         """
+        if "/" in file_name:
+            raise ValueError("File name cannot include '/'")
+
         # XXX: for some reason Docker was having problems mounting a directory in the temp directory that Python uses. As
         # a work around, mounting in the directory in which the test is running in.
         accesible_directory = os.path.dirname(os.path.realpath(__file__))
@@ -37,25 +41,33 @@ class SetupHelper:
         os.chmod(temp_file_path, 0o770)
 
         self.run_icommand("iput", [temp_file_path], error_if_stdout=True)
-
         shutil.rmtree(temp_directory_path)
 
-    def create_irods_collection(self, collection_name: str):
+        return IrodsFile(self.run_icommand("ipwd"), file_name)
+
+
+    def create_irods_collection(self, collection_name: str) -> IrodsFile:
         """
         Creates a test collection on iRODS with the given name and contents.
         :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
         :param collection_name: the name of the collection to create
+        :return: the file created
         """
+        if "/" in collection_name:
+            raise ValueError("Collection name cannot include '/'")
+
         self.run_icommand("imkdir", [collection_name], error_if_stdout=True)
 
-    def add_irods_metadata_to_file(self, file: str, metadata: Metadata):
+        return IrodsFile(self.run_icommand("ipwd"), collection_name)
+
+    def add_irods_metadata_to_file(self, file: IrodsFile, metadata: Metadata):
         """
         Adds the given metadata to a file on iRODS.
         :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
-        :param file:
-        :param metadata:
+        :param file: the file to add metadata to
+        :param metadata: the metadata to add
         """
-        self.run_icommand("imeta", ["add", "-d", file, metadata.attribute, metadata.value], error_if_stdout=True)
+        self.run_icommand("imeta", ["add", "-d", file.file_name, metadata.attribute, metadata.value], error_if_stdout=True)
 
     def run_icommand(self, icommand_binary: str, command_arguments: List[str]=None, error_if_stdout=False) -> str:
         """

@@ -23,22 +23,32 @@ class TestSetupHelper(unittest.TestCase):
     def test_create_irods_file(self):
         file_name = "filename"
         contents = "Test file contents"
-        self.setup_helper.create_irods_file(file_name, file_contents=contents)
+        file = self.setup_helper.create_irods_file(file_name, file_contents=contents)
 
+        self.assertEquals(file.file_name, file_name)
+        self.assertEquals(file.directory, self.setup_helper.run_icommand("ipwd"))
         self.assertIn(file_name, self.setup_helper.run_icommand("ils"))
+
+    def test_create_irods_file_with_file_path_opposed_to_file_name(self):
+        self.assertRaises(ValueError, self.setup_helper.create_irods_file, "/test")
 
     def test_create_irods_collection(self):
         collection_name = "collection"
-        self.setup_helper.create_irods_collection(collection_name)
+        collection = self.setup_helper.create_irods_collection(collection_name)
 
+        self.assertEquals(collection.file_name, collection_name)
+        self.assertEquals(collection.directory, self.setup_helper.run_icommand("ipwd"))
         self.assertIn("/%s" % collection_name, self.setup_helper.run_icommand("ils"))
+
+    def test_create_irods_collection_with_collection_path_opposed_to_collection_name(self):
+        self.assertRaises(ValueError, self.setup_helper.create_irods_collection, "/test")
 
     def test_add_irods_metadata_to_file(self):
         file_name = "filename"
-        self.setup_helper.create_irods_file(file_name)
+        file = self.setup_helper.create_irods_file(file_name)
 
         metadata = Metadata("attribute", "value")
-        self.setup_helper.add_irods_metadata_to_file(file_name, metadata)
+        self.setup_helper.add_irods_metadata_to_file(file, metadata)
 
         retrieved_metadata = self.setup_helper.run_icommand("imeta", ["ls", "-d", file_name])
         self.assertIn("attribute: %s" % metadata.attribute, retrieved_metadata)
