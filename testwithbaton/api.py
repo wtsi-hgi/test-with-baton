@@ -78,14 +78,21 @@ class TestWithBatonSetup:
 
         # Build baton Docker
         docker_client = create_client()
+        logging.debug("Building baton Docker")
         build_baton_docker(docker_client)
 
         if not self._external_irods_test_server:
+            logging.debug("Creating iRODS test server")
             self.irods_test_server = create_irods_test_server(docker_client)
+            logging.debug("Starting iRODS test server")
             start_irods(docker_client, self.irods_test_server)
+        else:
+            logging.debug("Using pre-existing iRODS server")
 
+        logging.debug("Creating proxies")
         self.baton_location = create_baton_proxy_binaries(self.irods_test_server)
         self.icommands_location = create_icommands_proxy_binaries(self.irods_test_server)
+        logging.debug("Setup complete")
 
     def tear_down(self):
         """
