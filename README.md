@@ -89,7 +89,7 @@ To help with the setup of tests, a number of Python setup helper methods are ava
 setup_helper = SetupHelper("icommands_location")
 setup_helper.create_irods_file("file_name", file_contents="contents"):
 setup_helper.create_irods_collection("collection_name"):
-setup_helper.add_irods_metadata_to_file(IrodsFile("directory", "filename"), Metadata("attribute", "value"):
+setup_helper.add_irods_metadata_to_file(File("directory", "filename"), Metadata("attribute", "value"):
 setup_helper.run_icommand("icommand_binary", command_arguments=["any", "arguments"], error_if_stdout=False)
 ```
 

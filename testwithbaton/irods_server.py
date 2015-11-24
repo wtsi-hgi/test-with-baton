@@ -4,10 +4,9 @@ import tempfile
 from typing import Tuple
 
 from docker import Client
-from irodscommon.models import IrodsServer, IrodsUser
 
 from testwithbaton.common import create_unique_container_name, get_open_port, find_hostname
-from testwithbaton.models import ContainerisedIrodsServer
+from testwithbaton.models import ContainerisedIrodsServer, IrodsUser, IrodsServer
 
 _IRODS_CONFIG_FILE_NAME = ".irodsEnv"
 

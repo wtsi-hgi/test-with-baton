@@ -1,7 +1,28 @@
 from typing import List
 
-from irodscommon.models import IrodsServer
-from irodscommon.models import IrodsUser
+from hgicommon.models import Model
+
+
+class IrodsUser(Model):
+    """
+    Model of an iRODS user.
+    """
+    def __init__(self, username: str, password: str, zone: str):
+        self.username = username
+        self.password = password
+        self.zone = zone
+
+
+class IrodsServer(Model):
+    """
+    Model of an iRODS server.
+    """
+    def __init__(self, host: str, port: int, users: List[IrodsUser]):
+        if not isinstance(port, int):
+            raise ValueError("Port number must be an integer - `%s` given" % port.__class__)
+        self.host = host
+        self.port = port
+        self.users = users
 
 
 class ContainerisedIrodsServer(IrodsServer):

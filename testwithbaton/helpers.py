@@ -5,7 +5,7 @@ import tempfile
 from typing import List
 
 from hgicommon.models import Metadata
-from irodscommon.models import IrodsFile
+from hgicommon.models import File
 
 
 class SetupHelper:
@@ -19,7 +19,7 @@ class SetupHelper:
         """
         self.icommands_location = icommands_location
 
-    def create_irods_file(self, file_name: str, file_contents: str= "") -> IrodsFile:
+    def create_irods_file(self, file_name: str, file_contents: str= "") -> File:
         """
         Creates a test data object file on iRODS with the given name and contents.
         :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
@@ -44,10 +44,10 @@ class SetupHelper:
         self.run_icommand("iput", [temp_file_path], error_if_stdout=True)
         shutil.rmtree(temp_directory_path)
 
-        return IrodsFile(self.run_icommand("ipwd"), file_name)
+        return File(self.run_icommand("ipwd"), file_name)
 
 
-    def create_irods_collection(self, collection_name: str) -> IrodsFile:
+    def create_irods_collection(self, collection_name: str) -> File:
         """
         Creates a test collection on iRODS with the given name and contents.
         :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
@@ -59,9 +59,9 @@ class SetupHelper:
 
         self.run_icommand("imkdir", [collection_name], error_if_stdout=True)
 
-        return IrodsFile(self.run_icommand("ipwd"), collection_name)
+        return File(self.run_icommand("ipwd"), collection_name)
 
-    def add_irods_metadata_to_file(self, file: IrodsFile, metadata: Metadata):
+    def add_irods_metadata_to_file(self, file: File, metadata: Metadata):
         """
         Adds the given metadata to a file on iRODS.
         :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
