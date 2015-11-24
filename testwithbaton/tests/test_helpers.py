@@ -1,8 +1,9 @@
 import unittest
 
+from hgicommon.models import Metadata
+
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
-from testwithbaton.models import Metadata
 
 
 class TestSetupHelper(unittest.TestCase):

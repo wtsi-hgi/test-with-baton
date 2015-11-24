@@ -4,7 +4,8 @@ import subprocess
 import tempfile
 from typing import List
 
-from testwithbaton.models import Metadata, IrodsFile
+from hgicommon.models import Metadata
+from irodscommon.models import IrodsFile
 
 
 class SetupHelper:

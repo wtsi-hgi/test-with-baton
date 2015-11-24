@@ -17,7 +17,8 @@ setup(
     description="Simplifying the testing of software that depends on baton.",
     long_description=open("README.md").read(),
 
-    install_requires=open("requirements.txt").read().splitlines(),
+    install_requires=[x for x in open("requirements.txt").read().splitlines() if "://" not in x],
+    dependency_links=[x for x in open("requirements.txt").read().splitlines() if "://" in x],
 
-    test_suite="sequencescape.tests"
+    test_suite="testwithbaton.tests"
 )

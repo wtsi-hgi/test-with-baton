@@ -2,13 +2,10 @@ import os
 import subprocess
 import unittest
 
-from testwithbaton.helpers import SetupHelper
-
-from testwithbaton.common import create_client
-
-from testwithbaton.irods_server import create_irods_test_server, start_irods
-
 from testwithbaton.api import TestWithBatonSetup, irodsEnvironmentKey, get_irods_server_from_environment_if_defined
+from testwithbaton.common import create_client
+from testwithbaton.helpers import SetupHelper
+from testwithbaton.irods_server import create_irods_test_server, start_irods
 
 
 class TestTestWithBatonSetup(unittest.TestCase):

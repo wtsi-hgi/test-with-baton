@@ -7,7 +7,7 @@ from typing import Union
 
 from testwithbaton.common import create_client
 from testwithbaton.irods_server import create_irods_test_server, start_irods
-from testwithbaton.models import IrodsServer, IrodsUser
+from irodscommon.models import IrodsServer, IrodsUser
 from testwithbaton.proxies import build_baton_docker, create_baton_proxy_binaries, create_icommands_proxy_binaries
 
 
