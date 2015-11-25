@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 from typing import List
 
-from hgicommon.models import Metadata
+from hgicommon.collections import Metadata
 from hgicommon.models import File
 
 
@@ -41,11 +41,10 @@ class SetupHelper:
             temp_file.write(file_contents)
         os.chmod(temp_file_path, 0o770)
 
-        self.run_icommand("iput", [temp_file_path], error_if_stdout=True)
+        self.run_icommand("iput", [temp_file_path])
         shutil.rmtree(temp_directory_path)
 
         return File(self.run_icommand("ipwd"), file_name)
-
 
     def create_irods_collection(self, collection_name: str) -> File:
         """
@@ -57,7 +56,7 @@ class SetupHelper:
         if "/" in collection_name:
             raise ValueError("Collection name cannot include '/'")
 
-        self.run_icommand("imkdir", [collection_name], error_if_stdout=True)
+        self.run_icommand("imkdir", [collection_name])
 
         return File(self.run_icommand("ipwd"), collection_name)
 
@@ -68,16 +67,19 @@ class SetupHelper:
         :param file: the file to add metadata to
         :param metadata: the metadata to add
         """
-        self.run_icommand("imeta", ["add", "-d", file.file_name, metadata.attribute, metadata.value], error_if_stdout=True)
+        for key, values in metadata.items():
+            # There may be a list of values for a single key. irods requires different values to be added with the same
+            # key
+            for value in values:
+                self.run_icommand("imeta", ["add", "-d", file.file_name, key, value])
 
-    def run_icommand(self, icommand_binary: str, command_arguments: List[str]=None, error_if_stdout=False) -> str:
+    def run_icommand(self, icommand_binary: str, command_arguments: List[str]=None) -> str:
         """
         Executes the given icommand binary with any arguments, returning the stdout as a string and raising an
-        exception if stderr is not `None`
+        exception if stderr is written to.
         :param icommand_binary: the binary to execute
         :param command_arguments: command arguments
-        :param error_if_stdout: whether to raise an exception if text on stdout (failure mode for some icommands)
-        :return: the output written to stdout by the icommand that was excuted
+        :return: the output written to stdout by the icommand that was executed
         """
         binary_path = os.path.join(self.icommands_location, icommand_binary)
         arguments = [binary_path]
@@ -85,10 +87,10 @@ class SetupHelper:
             arguments += command_arguments
 
         process = subprocess.Popen(
-            arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+            arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         out, error = process.communicate()
 
-        if error is not None or (error_if_stdout and len(out) != 0):
+        if len(error) != 0:
             raise RuntimeError("%s:\nError: %s\nOutput: %s" % (arguments, error, out))
 
         return out.decode("utf-8").rstrip()

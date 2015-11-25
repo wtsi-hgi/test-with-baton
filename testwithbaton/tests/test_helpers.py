@@ -1,6 +1,6 @@
 import unittest
 
-from hgicommon.models import Metadata
+from hgicommon.collections import Metadata
 
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
@@ -48,12 +48,13 @@ class TestSetupHelper(unittest.TestCase):
         file_name = "filename"
         file = self.setup_helper.create_irods_file(file_name)
 
-        metadata = Metadata("attribute", "value")
+        metadata = Metadata({"attribute_1": ["value_1", "value_2"], "attribute_2": "value_3"})
         self.setup_helper.add_irods_metadata_to_file(file, metadata)
 
         retrieved_metadata = self.setup_helper.run_icommand("imeta", ["ls", "-d", file_name])
-        self.assertIn("attribute: %s" % metadata.attribute, retrieved_metadata)
-        self.assertIn("value: %s" % metadata.value, retrieved_metadata)
+        self.assertIn("attribute: attribute_1\nvalue: value_1", retrieved_metadata)
+        self.assertIn("attribute: attribute_1\nvalue: value_2", retrieved_metadata)
+        self.assertIn("attribute: attribute_2\nvalue: value_3", retrieved_metadata)
 
     def tearDown(self):
         self.test_with_baton.tear_down()
