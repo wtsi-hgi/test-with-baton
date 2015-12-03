@@ -49,12 +49,17 @@ class TestSetupHelper(unittest.TestCase):
         file = self.setup_helper.create_irods_file(file_name)
 
         metadata = Metadata({"attribute_1": ["value_1", "value_2"], "attribute_2": "value_3"})
-        self.setup_helper.add_irods_metadata_to_file(file, metadata)
+        self.setup_helper.add_metadata_to_file(file, metadata)
 
         retrieved_metadata = self.setup_helper.run_icommand("imeta", ["ls", "-d", file_name])
         self.assertIn("attribute: attribute_1\nvalue: value_1", retrieved_metadata)
         self.assertIn("attribute: attribute_1\nvalue: value_2", retrieved_metadata)
         self.assertIn("attribute: attribute_2\nvalue: value_3", retrieved_metadata)
+
+    def test_get_checksum(self):
+        file_name = "filename"
+        file = self.setup_helper.create_irods_file(file_name, "abc")
+        self.assertEquals(self.setup_helper.get_checksum(file), "900150983cd24fb0d6963f7d28e17f72")
 
     def tearDown(self):
         self.test_with_baton.tear_down()

@@ -19,7 +19,7 @@ class SetupHelper:
         """
         self.icommands_location = icommands_location
 
-    def create_irods_file(self, file_name: str, file_contents: str= "") -> File:
+    def create_irods_file(self, file_name: str, file_contents: str="") -> File:
         """
         Creates a test data object file on iRODS with the given name and contents.
         :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
@@ -60,7 +60,7 @@ class SetupHelper:
 
         return File(self.run_icommand("ipwd"), collection_name)
 
-    def add_irods_metadata_to_file(self, file: File, metadata: Metadata):
+    def add_metadata_to_file(self, file: File, metadata: Metadata):
         """
         Adds the given metadata to a file on iRODS.
         :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
@@ -68,10 +68,19 @@ class SetupHelper:
         :param metadata: the metadata to add
         """
         for key, values in metadata.items():
-            # There may be a list of values for a single key. irods requires different values to be added with the same
-            # key
+            if not isinstance(values, list):
+                values = [values]
             for value in values:
                 self.run_icommand("imeta", ["add", "-d", file.file_name, key, value])
+
+    def get_checksum(self, file: File) -> str:
+        """
+        Gets the checksum of the given file on iRODS.
+        :param file: the file to get the checksum for
+        :return: the checksum of the file
+        """
+        checksum_out = self.run_icommand("ichksum", [file.directory + '/' + file.file_name])
+        return checksum_out.split('\n')[0].rsplit(' ', 1)[-1]
 
     def run_icommand(self, icommand_binary: str, command_arguments: List[str]=None) -> str:
         """
