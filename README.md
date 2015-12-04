@@ -87,12 +87,12 @@ test_with_baton.setup()
 To help with the setup of tests, a number of Python setup helper methods are available:
 ```python
 from testwithbaton import SetupHelper
-from hgicommon.models import File
+from hgicommon.models import File, Metadata
 
 setup_helper = SetupHelper("icommands_location")
 setup_helper.create_irods_file("file_name", file_contents="contents")
 setup_helper.create_irods_collection("collection_name")
-setup_helper.add_irods_metadata_to_file(File("directory", "filename"), Metadata("attribute", "value")
+setup_helper.add_metadata_to_file(File("directory", "filename"), Metadata("attribute", "value")
 setup_helper.get_checksum(File("file_directory", "file_name"))
 setup_helper.run_icommand("icommand_binary", command_arguments=["any", "arguments"], error_if_stdout=False)
 ```

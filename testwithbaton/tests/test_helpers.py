@@ -44,7 +44,7 @@ class TestSetupHelper(unittest.TestCase):
     def test_create_irods_collection_with_collection_path_opposed_to_collection_name(self):
         self.assertRaises(ValueError, self.setup_helper.create_irods_collection, "/test")
 
-    def test_add_irods_metadata_to_file(self):
+    def test_add_metadata_to_file(self):
         file_name = "filename"
         file = self.setup_helper.create_irods_file(file_name)
 
