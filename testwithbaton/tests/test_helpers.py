@@ -45,16 +45,18 @@ class TestSetupHelper(unittest.TestCase):
         self.assertRaises(ValueError, self.setup_helper.create_irods_collection, "/test")
 
     def test_add_metadata_to_file(self):
-        file_name = "filename"
-        file = self.setup_helper.create_irods_file(file_name)
+        file = self.setup_helper.create_irods_file("filename")
 
-        metadata = Metadata({"attribute_1": ["value_1", "value_2"], "attribute_2": "value_3"})
+        metadata = Metadata({"attribute_1": ["value_1", "value_2"], "attribute_2": set(["value_3", "value_4"]),
+                             "attribute_3": "value_5"})
         self.setup_helper.add_metadata_to_file(file, metadata)
 
-        retrieved_metadata = self.setup_helper.run_icommand("imeta", ["ls", "-d", file_name])
+        retrieved_metadata = self.setup_helper.run_icommand("imeta", ["ls", "-d", file.file_name])
         self.assertIn("attribute: attribute_1\nvalue: value_1", retrieved_metadata)
         self.assertIn("attribute: attribute_1\nvalue: value_2", retrieved_metadata)
         self.assertIn("attribute: attribute_2\nvalue: value_3", retrieved_metadata)
+        self.assertIn("attribute: attribute_2\nvalue: value_4", retrieved_metadata)
+        self.assertIn("attribute: attribute_3\nvalue: value_5", retrieved_metadata)
 
     def test_get_checksum(self):
         file_name = "filename"

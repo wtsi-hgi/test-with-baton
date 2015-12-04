@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 import tempfile
-from typing import List
+from typing import List, Sequence
 
 from hgicommon.collections import Metadata
 from hgicommon.models import File
@@ -68,10 +68,11 @@ class SetupHelper:
         :param metadata: the metadata to add
         """
         for key, values in metadata.items():
-            if not isinstance(values, list):
+            if not isinstance(values, list) and not isinstance(values, set):
                 values = [values]
+            assert type(values) != str
             for value in values:
-                self.run_icommand("imeta", ["add", "-d", file.file_name, key, value])
+                self.run_icommand("imeta", ["add", "-d", file.file_name, key, str(value)])
 
     def get_checksum(self, file: File) -> str:
         """
