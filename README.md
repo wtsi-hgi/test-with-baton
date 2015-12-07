@@ -5,7 +5,7 @@ Simplifying the testing of software that depends on [baton](https://github.com/w
 ## Introduction
 Compiling and configuring both baton and an iRODS server is not a trivial task. This software has been created to manage
 all of this and leave the developer with a directory containing baton binaries<sup>*</sup>, configured to use an empty
-iRODS database by default. These binaries can then be exploited in the testing of software that uses baton or just
+iRODS database by default. These binaries can then be exploited in the testing of software that uses baton or for just
 seeing how iRODS and baton work in a safe environment.
 
 Thanks to the use [wtsi-hgi's baton Docker image](https://github.com/wtsi-hgi/docker-baton) and
@@ -17,7 +17,7 @@ setup is exploited for each test case, a known test environment is ensured, thus
 However, if desired, a pre-existing iRODS setup can be used.
 
 Each setup creates baton binaries<sup>*</sup> that are linked to the iRODS server. Therefore, tests cases may be ran in
-parallel without fear of interference between them.
+parallel without interference between them.
 
 <i><sup>*</sup> These binaries are not the real baton binaries, as baton is run inside a Docker image; they are instead
 transparent "proxies" to the real binaries. However, they produce the same results and therefore are indistinguishable
@@ -87,13 +87,13 @@ test_with_baton.setup()
 To help with the setup of tests, a number of Python setup helper methods are available:
 ```python
 from testwithbaton import SetupHelper
-from hgicommon.models import File, Metadata
+from hgicommon.models import Metadata
 
 setup_helper = SetupHelper("icommands_location")
-setup_helper.create_irods_file("file_name", file_contents="contents")
-setup_helper.create_irods_collection("collection_name")
-setup_helper.add_metadata_to_file(File("directory", "filename"), Metadata("attribute", "value")
-setup_helper.get_checksum(File("file_directory", "file_name"))
+setup_helper.create_data_object("file_name", file_contents="contents")
+setup_helper.create_collection("collection_name")
+setup_helper.add_metadata_to("/path/to/entity/in/irods", Metadata("attribute", "value")
+setup_helper.get_checksum("/path/to/entity/in/irods")
 setup_helper.run_icommand("icommand_binary", command_arguments=["any", "arguments"], error_if_stdout=False)
 ```
 

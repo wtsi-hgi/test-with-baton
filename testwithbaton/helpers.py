@@ -15,23 +15,22 @@ class SetupHelper:
     def __init__(self, icommands_location: str):
         """
         Default constructor.
-        :param icommands_location: TODO
+        :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
         """
         self.icommands_location = icommands_location
 
-    def create_irods_file(self, file_name: str, file_contents: str="") -> File:
+    def create_data_object(self, file_name: str, file_contents: str= "") -> str:
         """
-        Creates a test data object file on iRODS with the given name and contents.
-        :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
+        Creates a test data object on iRODS with the given name and contents.
         :param file_name: the name of the file to create
         :param file_contents: the contents of the file to create
-        :return: the file created
+        :return: the path to the created file
         """
         if "/" in file_name:
             raise ValueError("File name cannot include '/'")
 
-        # XXX: for some reason Docker was having problems mounting a directory in the temp directory that Python uses. As
-        # a work around, mounting in the directory in which the test is running in.
+        # XXX: for some reason Docker was having problems mounting a directory in the temp directory that Python uses.
+        # As a work around, mounting in the directory in which the test is running in.
         accesible_directory = os.path.dirname(os.path.realpath(__file__))
         temp_directory_path = tempfile.mkdtemp(prefix=".iput-", dir=accesible_directory)
         temp_file_path = os.path.join(temp_directory_path, file_name)
@@ -44,43 +43,53 @@ class SetupHelper:
         self.run_icommand("iput", [temp_file_path])
         shutil.rmtree(temp_directory_path)
 
-        return File(self.run_icommand("ipwd"), file_name)
+        return "%s/%s" % (self.run_icommand("ipwd"), file_name)
 
-    def create_irods_collection(self, collection_name: str) -> File:
+    def create_collection(self, collection_name: str) -> str:
         """
         Creates a test collection on iRODS with the given name and contents.
-        :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
         :param collection_name: the name of the collection to create
-        :return: the file created
+        :return: the path to the created collection
         """
         if "/" in collection_name:
             raise ValueError("Collection name cannot include '/'")
 
         self.run_icommand("imkdir", [collection_name])
 
-        return File(self.run_icommand("ipwd"), collection_name)
+        return "%s/%s" % (self.run_icommand("ipwd"), collection_name)
 
-    def add_metadata_to_file(self, file: File, metadata: Metadata):
+    def add_metadata_to(self, location: str, metadata: Metadata):
         """
-        Adds the given metadata to a file on iRODS.
-        :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
-        :param file: the file to add metadata to
+        Adds the given metadata to the entity at the given location in iRODS.
+        :param location: the location to add metadata to (could correspond to a collection or data object)
         :param metadata: the metadata to add
         """
+        type_flag = "-c" if self.is_collection(location) else "-d"
+
         for key, values in metadata.items():
             if not isinstance(values, list) and not isinstance(values, set):
                 values = [values]
             assert type(values) != str
             for value in values:
-                self.run_icommand("imeta", ["add", "-d", file.file_name, key, str(value)])
+                # TODO: Cope with collection!
+                self.run_icommand("imeta", ["add", type_flag, location, key, str(value)])
 
-    def get_checksum(self, file: File) -> str:
+    def is_collection(self, location: str) -> bool:
         """
-        Gets the checksum of the given file on iRODS.
-        :param file: the file to get the checksum for
-        :return: the checksum of the file
+        Checks whether the given location in iRODS is a collection.
+        :param location: the location to check
+        :return: whether there is a collection at the given location
         """
-        checksum_out = self.run_icommand("ichksum", [file.directory + '/' + file.file_name])
+        listing = self.run_icommand("ils", [location])
+        return ":" in listing
+
+    def get_checksum(self, path: str) -> str:
+        """
+        Gets the checksum of the given entity on iRODS.
+        :param path: the path to the entity
+        :return: the checksum of the entity
+        """
+        checksum_out = self.run_icommand("ichksum", [path])
         return checksum_out.split('\n')[0].rsplit(' ', 1)[-1]
 
     def run_icommand(self, icommand_binary: str, command_arguments: List[str]=None) -> str:
