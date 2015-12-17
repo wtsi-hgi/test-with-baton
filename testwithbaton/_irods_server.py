@@ -5,7 +5,7 @@ from typing import Tuple
 
 from docker import Client
 
-from testwithbaton.common import create_unique_container_name, get_open_port, find_hostname
+from testwithbaton._common import create_unique_container_name, get_open_port, find_hostname
 from testwithbaton.models import ContainerisedIrodsServer, IrodsUser, IrodsServer
 
 _IRODS_CONFIG_FILE_NAME = ".irodsEnv"
@@ -17,8 +17,8 @@ _IRODS_PORT_PARAMETER_NAME = "irodsPort"
 _IRODS_ZONE_PARAMETER_NAME = "irodsZone"
 
 _IRODS_TEST_SERVER_DOCKER = "agaveapi/irods:3.3.1"
-_IRODS_TEST_SERVER_USERNAME = "testuser"
-_IRODS_TEST_SERVER_PASSWORD = "testuser"
+_IRODS_TEST_SERVER_USERNAME = "rods"
+_IRODS_TEST_SERVER_PASSWORD = "rods"
 _IRODS_TEST_SERVER_ZONE = "iplant"
 
 
@@ -30,7 +30,7 @@ def create_irods_test_server(docker_client: Client) -> ContainerisedIrodsServer:
     """
     container, port = _create_irods_server_container(docker_client)
     hostname = find_hostname(docker_client)
-    users = [IrodsUser(_IRODS_TEST_SERVER_USERNAME, _IRODS_TEST_SERVER_PASSWORD, _IRODS_TEST_SERVER_ZONE)]
+    users = [IrodsUser(_IRODS_TEST_SERVER_USERNAME, _IRODS_TEST_SERVER_PASSWORD, _IRODS_TEST_SERVER_ZONE, True)]
 
     return ContainerisedIrodsServer(container, hostname, port, users)
 

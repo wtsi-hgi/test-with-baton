@@ -7,10 +7,11 @@ class IrodsUser(Model):
     """
     Model of an iRODS user.
     """
-    def __init__(self, username: str, password: str, zone: str):
+    def __init__(self, username: str, password: str, zone: str, admin=False):
         self.username = username
         self.password = password
         self.zone = zone
+        self.admin = admin
 
 
 class IrodsServer(Model):

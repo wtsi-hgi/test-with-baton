@@ -2,10 +2,9 @@ import os
 import shutil
 import subprocess
 import tempfile
-from typing import List, Sequence
+from typing import List
 
 from hgicommon.collections import Metadata
-from hgicommon.models import File
 
 
 class SetupHelper:
@@ -71,7 +70,6 @@ class SetupHelper:
                 values = [values]
             assert type(values) != str
             for value in values:
-                # TODO: Cope with collection!
                 self.run_icommand("imeta", ["add", type_flag, location, key, str(value)])
 
     def is_collection(self, location: str) -> bool:
@@ -85,9 +83,9 @@ class SetupHelper:
 
     def get_checksum(self, path: str) -> str:
         """
-        Gets the checksum of the given entity on iRODS.
-        :param path: the path to the entity
-        :return: the checksum of the entity
+        Gets the checksum of the given data object on iRODS.
+        :param path: the path to the data object
+        :return: the checksum of the data object
         """
         checksum_out = self.run_icommand("ichksum", [path])
         return checksum_out.split('\n')[0].rsplit(' ', 1)[-1]

@@ -3,9 +3,9 @@ import subprocess
 import unittest
 
 from testwithbaton.api import TestWithBatonSetup, irodsEnvironmentKey, get_irods_server_from_environment_if_defined
-from testwithbaton.common import create_client
+from testwithbaton._common import create_client
 from testwithbaton.helpers import SetupHelper
-from testwithbaton.irods_server import create_irods_test_server, start_irods
+from testwithbaton._irods_server import create_irods_test_server, start_irods
 
 
 class TestTestWithBatonSetup(unittest.TestCase):
@@ -18,7 +18,7 @@ class TestTestWithBatonSetup(unittest.TestCase):
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
     def test_can_use_icommand_binary(self):
-        self.assertEquals(self.setup_helper.run_icommand("ils"), "/iplant/home/testuser:")
+        self.assertEquals(self.setup_helper.run_icommand("ils"), "/iplant/home/%s:" % self.test_with_baton.irods_test_server.users[0].username)
 
     def test_can_use_baton_binary(self):
         process = subprocess.Popen(["%s/baton" % self.test_with_baton.baton_location],
