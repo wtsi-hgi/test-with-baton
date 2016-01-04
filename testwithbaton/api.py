@@ -17,7 +17,7 @@ _DEFAULT_BATON_DOCKER_BUILD = BatonDockerBuild(
 )
 
 
-class irodsEnvironmentKey(Enum):
+class IrodsEnvironmentKey(Enum):
     """
     Keys of environment variables that may be used to define an iRODS server that can be loaded using
     `get_irods_server_from_environment_if_defined`.
@@ -35,18 +35,18 @@ def get_irods_server_from_environment_if_defined() -> Union[None, IrodsServer]:
     definition was found, returns `None`.
     :return: a representation of the iRODS server defined through environment variables else `None` if no definition
     """
-    for key in irodsEnvironmentKey:
+    for key in IrodsEnvironmentKey:
         environment_value = os.environ.get(key.value)
         if environment_value is None:
             return None
 
     return IrodsServer(
-        os.environ[irodsEnvironmentKey.IRODS_HOST.value],
-        int(os.environ[irodsEnvironmentKey.IRODS_PORT.value]),
+        os.environ[IrodsEnvironmentKey.IRODS_HOST.value],
+        int(os.environ[IrodsEnvironmentKey.IRODS_PORT.value]),
         [IrodsUser(
-            os.environ[irodsEnvironmentKey.IRODS_USERNAME.value],
-            os.environ[irodsEnvironmentKey.IRODS_PASSWORD.value],
-            os.environ[irodsEnvironmentKey.IRODS_ZONE.value],
+            os.environ[IrodsEnvironmentKey.IRODS_USERNAME.value],
+            os.environ[IrodsEnvironmentKey.IRODS_PASSWORD.value],
+            os.environ[IrodsEnvironmentKey.IRODS_ZONE.value],
         )]
     )
 
@@ -67,7 +67,7 @@ class TestWithBatonSetup:
     def __init__(
             self, irods_test_server: IrodsServer=None, baton_docker_build: BatonDockerBuild=_DEFAULT_BATON_DOCKER_BUILD):
         """
-        Default constructor.
+        Constructor.
         :param irods_test_server: a pre-configured, running iRODS server to use in the tests
         :param baton_docker_build: baton Docker that is to be built and used
         """
@@ -77,12 +77,16 @@ class TestWithBatonSetup:
         self.irods_test_server = irods_test_server
         self._external_irods_test_server = irods_test_server is not None
         self._state = TestWithBatonSetup._SetupState.INIT
-        self.baton_docker_build = baton_docker_build
+        self._baton_docker_build = baton_docker_build
 
         self.baton_location = None
         self.icommands_location = None
 
     def setup(self):
+        """
+        Sets up the setup: builds the baton Docker image, starts the iRODS test server (if required) and creates the
+        proxies.
+        """
         if self._state != TestWithBatonSetup._SetupState.INIT:
             raise RuntimeError("Already been setup")
         self._state = TestWithBatonSetup._SetupState.RUNNING
@@ -90,7 +94,7 @@ class TestWithBatonSetup:
         # Build baton Docker
         docker_client = create_client()
         logging.debug("Building baton Docker")
-        build_baton_docker(docker_client, self.baton_docker_build)
+        build_baton_docker(docker_client, self._baton_docker_build)
 
         if not self._external_irods_test_server:
             logging.debug("Creating iRODS test server")
@@ -102,9 +106,9 @@ class TestWithBatonSetup:
 
         logging.debug("Creating proxies")
         self.baton_location = create_baton_proxy_binaries(
-                self.irods_test_server, self.baton_docker_build.build_name)
+                self.irods_test_server, self._baton_docker_build.build_name)
         self.icommands_location = create_icommands_proxy_binaries(
-                self.irods_test_server, self.baton_docker_build.build_name)
+                self.irods_test_server, self._baton_docker_build.build_name)
         logging.debug("Setup complete")
 
     def tear_down(self):

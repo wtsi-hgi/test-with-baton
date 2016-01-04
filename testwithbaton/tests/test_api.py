@@ -1,11 +1,13 @@
 import os
 import subprocess
 import unittest
+import uuid
 
-from testwithbaton.api import TestWithBatonSetup, irodsEnvironmentKey, get_irods_server_from_environment_if_defined
 from testwithbaton._common import create_client
-from testwithbaton.helpers import SetupHelper
 from testwithbaton._irods_server import create_irods_test_server, start_irods
+from testwithbaton.api import TestWithBatonSetup, IrodsEnvironmentKey, get_irods_server_from_environment_if_defined
+from testwithbaton.helpers import SetupHelper
+from testwithbaton.models import BatonDockerBuild
 
 
 class TestTestWithBatonSetup(unittest.TestCase):
@@ -59,13 +61,37 @@ class TestTestWithBatonSetup(unittest.TestCase):
         ienv_output = self.setup_helper.run_icommand("ienv")
 
         port = -1
-        for line in ienv_output.split("\n"):
+        for line in ienv_output.split('\n'):
             if "irodsPort" in line:
-                port = int(line.split("=")[1])
+                port = int(line.split('=')[1])
                 break
         assert port != -1
 
         self.assertEquals(port, irods_server.port)
+
+    def test_can_use_custom_baton_docker(self):
+        external_unique_identifier = str(uuid.uuid4())
+        custom_baton_docker_build = BatonDockerBuild(
+            "github.com/wtsi-hgi/docker-baton.git",
+            "wtsi-hgi/baton/tests:%s-%s" % (self._testMethodName, external_unique_identifier),
+            "custom/irods-3.3.1/Dockerfile",
+            {
+                "REPOSITORY": "https://github.com/wtsi-npg/baton.git",
+                "BRANCH": "release-0.16.1"
+            }
+        )
+
+        test_with_baton_with_custom_baton_docker = TestWithBatonSetup(baton_docker_build=custom_baton_docker_build)
+        test_with_baton_with_custom_baton_docker.setup()
+
+        client = create_client()
+        tags = []
+        for image in client.images():
+            tags.extend(image["RepoTags"])
+        self.assertIn(custom_baton_docker_build.build_name, tags)
+
+        test_with_baton_with_custom_baton_docker.tear_down()
+        client.remove_image(custom_baton_docker_build.build_name, force=True, noprune=True)
 
     def tearDown(self):
         self.test_with_baton.tear_down()
@@ -88,16 +114,16 @@ class TestGetIrodsServerFromEnvironmentIfDefined(unittest.TestCase):
         self.assertIsNone(get_irods_server_from_environment_if_defined())
 
     def test_none_if_partially_defined(self):
-        os.environ[irodsEnvironmentKey.IRODS_HOST.value] = TestGetIrodsServerFromEnvironmentIfDefined.HOST
-        os.environ[irodsEnvironmentKey.IRODS_USERNAME.value] = TestGetIrodsServerFromEnvironmentIfDefined.USERNAME
+        os.environ[IrodsEnvironmentKey.IRODS_HOST.value] = TestGetIrodsServerFromEnvironmentIfDefined.HOST
+        os.environ[IrodsEnvironmentKey.IRODS_USERNAME.value] = TestGetIrodsServerFromEnvironmentIfDefined.USERNAME
         self.assertIsNone(get_irods_server_from_environment_if_defined())
 
     def test_can_get_if_defined(self):
-        os.environ[irodsEnvironmentKey.IRODS_HOST.value] = TestGetIrodsServerFromEnvironmentIfDefined.HOST
-        os.environ[irodsEnvironmentKey.IRODS_PORT.value] = TestGetIrodsServerFromEnvironmentIfDefined.PORT
-        os.environ[irodsEnvironmentKey.IRODS_USERNAME.value] = TestGetIrodsServerFromEnvironmentIfDefined.USERNAME
-        os.environ[irodsEnvironmentKey.IRODS_PASSWORD.value] = TestGetIrodsServerFromEnvironmentIfDefined.PASSWORD
-        os.environ[irodsEnvironmentKey.IRODS_ZONE.value] = TestGetIrodsServerFromEnvironmentIfDefined.ZONE
+        os.environ[IrodsEnvironmentKey.IRODS_HOST.value] = TestGetIrodsServerFromEnvironmentIfDefined.HOST
+        os.environ[IrodsEnvironmentKey.IRODS_PORT.value] = TestGetIrodsServerFromEnvironmentIfDefined.PORT
+        os.environ[IrodsEnvironmentKey.IRODS_USERNAME.value] = TestGetIrodsServerFromEnvironmentIfDefined.USERNAME
+        os.environ[IrodsEnvironmentKey.IRODS_PASSWORD.value] = TestGetIrodsServerFromEnvironmentIfDefined.PASSWORD
+        os.environ[IrodsEnvironmentKey.IRODS_ZONE.value] = TestGetIrodsServerFromEnvironmentIfDefined.ZONE
 
         irods_server = get_irods_server_from_environment_if_defined()
         self.assertEquals(irods_server.host, TestGetIrodsServerFromEnvironmentIfDefined.HOST)
@@ -111,11 +137,11 @@ class TestGetIrodsServerFromEnvironmentIfDefined(unittest.TestCase):
 
     @staticmethod
     def _clean_environment():
-        for key in irodsEnvironmentKey:
+        for key in IrodsEnvironmentKey:
             value = os.environ.get(key.value)
             if value is not None:
                 del os.environ[key.value]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

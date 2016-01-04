@@ -24,8 +24,8 @@ def create_client() -> Client:
 
 def create_unique_container_name(name_hint: str="") -> str:
     """
-    Creates a unique build_name for the container with an optional build_name hint.
-    :param name_hint: optional build_name hint
+    Creates a unique build_name for the container with an optional name hint.
+    :param name_hint: optional name hint
     :return: unique build_name with the build_name hint if given
     """
     if name_hint is not "":
