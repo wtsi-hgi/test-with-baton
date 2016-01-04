@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Sequence
 
 from hgicommon.models import Model
 
@@ -20,7 +20,7 @@ class IrodsServer(Model):
     """
     def __init__(self, host: str, port: int, users: List[IrodsUser]):
         if not isinstance(port, int):
-            raise ValueError("Port number must be an integer - `%s` given" % port.__class__)
+            raise ValueError("Port number must be an integer: `%s` given" % port.__class__)
         self.host = host
         self.port = port
         self.users = users
@@ -33,3 +33,14 @@ class ContainerisedIrodsServer(IrodsServer):
     def __init__(self, container: dict, host: str, port: int, users: List[IrodsUser]):
         super(ContainerisedIrodsServer, self).__init__(host, port, users)
         self.container = container
+
+
+class BatonDockerBuild:
+    """
+    Model of a baton Docker build.
+    """
+    def __init__(self, path: str, build_name: str, docker_file: str="Dockerfile", build_args: dict=()):
+        self.path = path
+        self.build_name = build_name
+        self.docker_file = docker_file
+        self.build_args = build_args

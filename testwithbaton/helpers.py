@@ -13,22 +13,22 @@ class SetupHelper:
     """
     def __init__(self, icommands_location: str):
         """
-        Default constructor.
+        Constructor.
         :param icommands_location: the location of the icommands that can be used to communicate with the iRODS server
         """
         self.icommands_location = icommands_location
 
     def create_data_object(self, file_name: str, file_contents: str= "") -> str:
         """
-        Creates a test data object on iRODS with the given name and contents.
-        :param file_name: the name of the file to create
+        Creates a test data object on iRODS with the given build_name and contents.
+        :param file_name: the build_name of the file to create
         :param file_contents: the contents of the file to create
         :return: the path to the created file
         """
         if "/" in file_name:
-            raise ValueError("File name cannot include '/'")
+            raise ValueError("File build_name cannot include '/'")
 
-        # XXX: for some reason Docker was having problems mounting a directory in the temp directory that Python uses.
+        # XXX: Using the default setup of Docker, the temp directory that Python uses cannot be mounted on Mac.
         # As a work around, mounting in the directory in which the test is running in.
         accesible_directory = os.path.dirname(os.path.realpath(__file__))
         temp_directory_path = tempfile.mkdtemp(prefix=".iput-", dir=accesible_directory)
@@ -46,12 +46,12 @@ class SetupHelper:
 
     def create_collection(self, collection_name: str) -> str:
         """
-        Creates a test collection on iRODS with the given name and contents.
-        :param collection_name: the name of the collection to create
+        Creates a test collection on iRODS with the given build_name and contents.
+        :param collection_name: the build_name of the collection to create
         :return: the path to the created collection
         """
         if "/" in collection_name:
-            raise ValueError("Collection name cannot include '/'")
+            raise ValueError("Collection build_name cannot include '/'")
 
         self.run_icommand("imkdir", [collection_name])
 

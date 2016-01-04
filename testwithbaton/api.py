@@ -7,8 +7,14 @@ from typing import Union
 
 from testwithbaton._common import create_client
 from testwithbaton._irods_server import create_irods_test_server, start_irods
-from testwithbaton.models import IrodsServer, IrodsUser
+from testwithbaton.models import IrodsServer, IrodsUser, BatonDockerBuild
 from testwithbaton._proxies import build_baton_docker, create_baton_proxy_binaries, create_icommands_proxy_binaries
+
+_DEFAULT_BATON_DOCKER_BUILD = BatonDockerBuild(
+    "github.com/wtsi-hgi/docker-baton.git",
+    "wtsi-hgi/baton:0.16.1",
+    "0.16.1/irods-3.3.1/Dockerfile"
+)
 
 
 class irodsEnvironmentKey(Enum):
@@ -30,8 +36,8 @@ def get_irods_server_from_environment_if_defined() -> Union[None, IrodsServer]:
     :return: a representation of the iRODS server defined through environment variables else `None` if no definition
     """
     for key in irodsEnvironmentKey:
-        environmentValue = os.environ.get(key.value)
-        if environmentValue is None:
+        environment_value = os.environ.get(key.value)
+        if environment_value is None:
             return None
 
     return IrodsServer(
@@ -58,11 +64,12 @@ class TestWithBatonSetup:
         RUNNING = 1,
         STOPPED = 2
 
-    # TODO: Allow setting what irods test server to create if none given
-    def __init__(self, irods_test_server: IrodsServer=None):
+    def __init__(
+            self, irods_test_server: IrodsServer=None, baton_docker_build: BatonDockerBuild=_DEFAULT_BATON_DOCKER_BUILD):
         """
         Default constructor.
         :param irods_test_server: a pre-configured, running iRODS server to use in the tests
+        :param baton_docker_build: baton Docker that is to be built and used
         """
         # Ensure that no matter what happens, tear down is done
         atexit.register(self.tear_down)
@@ -70,6 +77,10 @@ class TestWithBatonSetup:
         self.irods_test_server = irods_test_server
         self._external_irods_test_server = irods_test_server is not None
         self._state = TestWithBatonSetup._SetupState.INIT
+        self.baton_docker_build = baton_docker_build
+
+        self.baton_location = None
+        self.icommands_location = None
 
     def setup(self):
         if self._state != TestWithBatonSetup._SetupState.INIT:
@@ -79,7 +90,7 @@ class TestWithBatonSetup:
         # Build baton Docker
         docker_client = create_client()
         logging.debug("Building baton Docker")
-        build_baton_docker(docker_client)
+        build_baton_docker(docker_client, self.baton_docker_build)
 
         if not self._external_irods_test_server:
             logging.debug("Creating iRODS test server")
@@ -90,8 +101,10 @@ class TestWithBatonSetup:
             logging.debug("Using pre-existing iRODS server")
 
         logging.debug("Creating proxies")
-        self.baton_location = create_baton_proxy_binaries(self.irods_test_server)
-        self.icommands_location = create_icommands_proxy_binaries(self.irods_test_server)
+        self.baton_location = create_baton_proxy_binaries(
+                self.irods_test_server, self.baton_docker_build.build_name)
+        self.icommands_location = create_icommands_proxy_binaries(
+                self.irods_test_server, self.baton_docker_build.build_name)
         logging.debug("Setup complete")
 
     def tear_down(self):

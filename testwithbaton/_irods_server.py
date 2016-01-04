@@ -10,7 +10,6 @@ from testwithbaton.models import ContainerisedIrodsServer, IrodsUser, IrodsServe
 
 _IRODS_CONFIG_FILE_NAME = ".irodsEnv"
 
-# TODO: Should be settings
 _IRODS_USERNAME_PARAMETER_NAME = "irodsUserName"
 _IRODS_HOST_PARAMETER_NAME = "irodsHost"
 _IRODS_PORT_PARAMETER_NAME = "irodsPort"
