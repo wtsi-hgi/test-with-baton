@@ -15,7 +15,7 @@ _ICOMMAND_BINARIES = ["ibun", "icd", "ichksum", "ichmod", "icp", "idbug", "ienv"
                       "iget", "igetwild", "ihelp", "iinit", "ilocate", "ils", "ilsresc", "imcoll", "imiscsvrinfo",
                       "imkdir", "imv", "ipasswd", "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod",
                       "iqstat", "iquest", "iquota", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule", "iscan",
-                      "isysmeta", "itrim", "iuserinfo", "ixmsg", "izonereport", "imeta"]
+                      "isysmeta", "itrim", "iuserinfo", "ixmsg", "izonereport", "imeta", "iadmin"]
 
 
 def build_baton_docker(docker_client: Client, baton_docker_build: BatonDockerBuild):

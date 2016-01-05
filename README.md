@@ -31,7 +31,7 @@ in the eyes of the SUT to a real baton installation.</i>
 
 ### With Python
 #### Including the `testwithbaton` library
-In ``/requirements.txt`` or in your ``/setup.py`` script:
+In ``/test_requirements.txt`` or in your ``/setup.py`` script:
 ```
 git+https://github.com/wtsi-hgi/test-with-baton.git@master#egg=testwithbaton
 ```
