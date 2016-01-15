@@ -94,7 +94,7 @@ setup_helper.create_data_object("file_name", file_contents="contents")
 setup_helper.create_collection("collection_name")
 setup_helper.add_metadata_to("/path/to/entity/in/irods", Metadata("attribute", "value")
 setup_helper.get_checksum("/path/to/entity/in/irods")
-setup_helper.run_icommand("icommand_binary", command_arguments=["any", "arguments"], error_if_stdout=False)
+setup_helper.run_icommand("icommand_binary", command_arguments=["any", "arguments"])
 ```
 
 

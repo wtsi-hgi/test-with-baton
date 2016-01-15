@@ -5,8 +5,9 @@ from hgicommon.collections import Metadata
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
-_TEST_METADATA = Metadata({"attribute_1": ["value_1", "value_2"], "attribute_2": ["value_3", "value_4"],
-                             "attribute_3": "value_5"})
+_METADATA = Metadata(
+        {"attribute_1": ["value_1", "value_2"], "attribute_2": ["value_3", "value_4"], "attribute_3": "value_5"})
+_DATA_OBJECT_NAME = "data-object-name"
 
 
 class TestSetupHelper(unittest.TestCase):
@@ -24,16 +25,24 @@ class TestSetupHelper(unittest.TestCase):
         self.assertTrue(ils.startswith("/"))
         self.assertTrue(ils.endswith(":"))
 
-    def test_create_data_object(self):
-        file_name = "filename"
-        contents = "Test file contents"
-        path = self.setup_helper.create_data_object(file_name, file_contents=contents)
-
-        self.setup_helper.run_icommand("icd", [path.rsplit('/', 1)[-1]])
-        self.assertIn(file_name, self.setup_helper.run_icommand("ils"))
-
     def test_create_data_object_with_file_path_opposed_to_file_name(self):
         self.assertRaises(ValueError, self.setup_helper.create_data_object, "/test")
+
+    def test_create_data_object(self):
+        contents = "Test contents"
+        path = self.setup_helper.create_data_object(_DATA_OBJECT_NAME, contents=contents)
+
+        self.setup_helper.run_icommand("icd", [path.rsplit('/', 1)[-1]])
+        self.assertIn(_DATA_OBJECT_NAME, self.setup_helper.run_icommand("ils"))
+        # FIXME: Not testing for contents
+
+    def test_replicate_data_object(self):
+        data_object_location = self.setup_helper.create_data_object(_DATA_OBJECT_NAME)
+        resource_name = self.setup_helper.create_replica_storage()
+        self.setup_helper.replicate_data_object(data_object_location, resource_name)
+
+        collection_listing = self.setup_helper.run_icommand("ils", ["-l"])
+        self.assertIn("1 %s" % resource_name[0:20], collection_listing)
 
     def test_create_collection(self):
         collection_name = "collection"
@@ -46,25 +55,29 @@ class TestSetupHelper(unittest.TestCase):
         self.assertRaises(ValueError, self.setup_helper.create_collection, "/test")
 
     def test_add_metadata_to_data_object(self):
-        path = self.setup_helper.create_data_object("filename")
+        path = self.setup_helper.create_data_object(_DATA_OBJECT_NAME)
 
-        self.setup_helper.add_metadata_to(path, _TEST_METADATA)
+        self.setup_helper.add_metadata_to(path, _METADATA)
 
         retrieved_metadata = self.setup_helper.run_icommand("imeta", ["ls", "-d", path])
-        self._assert_metadata_in_retrieved(_TEST_METADATA, retrieved_metadata)
+        self._assert_metadata_in_retrieved(_METADATA, retrieved_metadata)
 
     def test_add_metadata_to_collection(self):
         path = self.setup_helper.create_collection("collection")
 
-        self.setup_helper.add_metadata_to(path, _TEST_METADATA)
+        self.setup_helper.add_metadata_to(path, _METADATA)
 
         retrieved_metadata = self.setup_helper.run_icommand("imeta", ["ls", "-c", path])
-        self._assert_metadata_in_retrieved(_TEST_METADATA, retrieved_metadata)
+        self._assert_metadata_in_retrieved(_METADATA, retrieved_metadata)
 
     def test_get_checksum(self):
-        file_name = "filename"
-        path = self.setup_helper.create_data_object(file_name, "abc")
+        path = self.setup_helper.create_data_object(_DATA_OBJECT_NAME, "abc")
         self.assertEquals(self.setup_helper.get_checksum(path), "900150983cd24fb0d6963f7d28e17f72")
+
+    def test_create_replica_storage(self):
+        resource_name = self.setup_helper.create_replica_storage()
+        resource_info = self.setup_helper.run_icommand("iadmin",  ["lr", resource_name])
+        self.assertIn("resc_name: %s" % resource_name, resource_info)
 
     def tearDown(self):
         self.test_with_baton.tear_down()
@@ -81,5 +94,4 @@ class TestSetupHelper(unittest.TestCase):
                 attribute_values = [attribute_values]
 
             for value in attribute_values:
-                print(value)
                 self.assertIn("attribute: %s\nvalue: %s" % (attribute, value), retrieved_metadata)

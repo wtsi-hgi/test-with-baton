@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import tempfile
 from typing import List
+from uuid import uuid4
 
 from hgicommon.collections import Metadata
 
@@ -18,44 +19,52 @@ class SetupHelper:
         """
         self.icommands_location = icommands_location
 
-    def create_data_object(self, file_name: str, file_contents: str= "") -> str:
+    def create_data_object(self, name: str, contents: str= "") -> str:
         """
-        Creates a test data object on iRODS with the given build_name and contents.
-        :param file_name: the build_name of the file to create
-        :param file_contents: the contents of the file to create
+        Creates a test data object on iRODS with the given name and contents.
+        :param name: the nane of the file to create
+        :param contents: the contents of the file to create
         :return: the path to the created file
         """
-        if "/" in file_name:
-            raise ValueError("File build_name cannot include '/'")
+        if "/" in name:
+            raise ValueError("File name cannot include '/'")
 
         # XXX: Using the default setup of Docker, the temp directory that Python uses cannot be mounted on Mac.
         # As a work around, mounting in the directory in which the test is running in.
         accesible_directory = os.path.dirname(os.path.realpath(__file__))
         temp_directory_path = tempfile.mkdtemp(prefix=".iput-", dir=accesible_directory)
-        temp_file_path = os.path.join(temp_directory_path, file_name)
+        temp_file_path = os.path.join(temp_directory_path, name)
         os.chmod(temp_directory_path, 0o770)
 
         with open(temp_file_path, 'w+') as temp_file:
-            temp_file.write(file_contents)
+            temp_file.write(contents)
         os.chmod(temp_file_path, 0o770)
 
         self.run_icommand("iput", [temp_file_path])
         shutil.rmtree(temp_directory_path)
 
-        return "%s/%s" % (self.run_icommand("ipwd"), file_name)
+        return "%s/%s" % (self.run_icommand("ipwd"), name)
 
-    def create_collection(self, collection_name: str) -> str:
+    def replicate_data_object(self, location: str, replicate_to: str):
         """
-        Creates a test collection on iRODS with the given build_name and contents.
-        :param collection_name: the build_name of the collection to create
+        Replicates the data object in the given location to the given resource.
+        :param location: the location of the data object that is to be replicated
+        :param replicate_to: the name of the resource to which the data object should be replicated to
+        """
+        self.run_icommand("irepl", ["-R", replicate_to, location])
+
+    def create_collection(self, name: str) -> str:
+        """
+        Creates a test collection on iRODS with the given name and contents.
+        :param name: the name of the collection to create
         :return: the path to the created collection
         """
-        if "/" in collection_name:
-            raise ValueError("Collection build_name cannot include '/'")
+        if "/" in name:
+            raise ValueError("Collection name cannot include '/'")
 
-        self.run_icommand("imkdir", [collection_name])
+        self.run_icommand("imkdir", [name])
 
-        return "%s/%s" % (self.run_icommand("ipwd"), collection_name)
+        return "%s/%s" % (self.run_icommand("ipwd"), name)
 
     def add_metadata_to(self, location: str, metadata: Metadata):
         """
@@ -89,6 +98,17 @@ class SetupHelper:
         """
         checksum_out = self.run_icommand("ichksum", [path])
         return checksum_out.split('\n')[0].rsplit(' ', 1)[-1]
+
+    def create_replica_storage(self) -> str:
+        """
+        Creates replica storage resource.
+        :return: the name of the storage resource
+        """
+        name = str(uuid4())
+        location = "/tmp/%s" % name
+        self.run_icommand(
+                "iadmin", ["mkresc", "'%s'" % name, "'unix file system'", "cache", "localhost", "'%s'" % location])
+        return name
 
     def run_icommand(self, icommand_binary: str, command_arguments: List[str]=None) -> str:
         """
