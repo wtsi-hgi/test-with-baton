@@ -35,7 +35,7 @@ class ContainerisedIrodsServer(IrodsServer):
         self.container = container
 
 
-class BatonDockerBuild:
+class BatonDockerBuild(Model):
     """
     Model of a baton Docker build.
     """
@@ -44,3 +44,12 @@ class BatonDockerBuild:
         self.build_name = build_name
         self.docker_file = docker_file
         self.build_args = build_args
+
+
+class IrodsResource(Model):
+    """
+    Model of a iRODS server resource.
+    """
+    def __init__(self, name: str, location: str):
+        self.name = name
+        self.location = location

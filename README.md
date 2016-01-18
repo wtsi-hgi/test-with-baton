@@ -1,23 +1,24 @@
 # Test with baton
-Simplifying the testing of software that depends on [baton](https://github.com/wtsi-npg/baton).
+Test with baton exploits [Docker](http://docker.com) to simplify the testing of software that depends on
+[baton](https://github.com/wtsi-npg/baton).
 
 
 ## Introduction
-Compiling and configuring both baton and an iRODS server is not a trivial task. This software has been created to manage
-all of this and leave the developer with a directory containing baton binaries<sup>*</sup>, configured to use an empty
-iRODS database by default. These binaries can then be exploited in the testing of software that uses baton or for just
-seeing how iRODS and baton work in a safe environment.
+Compiling and configuring both baton and iRODS is non-trivial task. This software has been created to manage this
+automatically, leaving the developer with baton-like binaries<sup>*</sup> that have been pre-configured to work with an
+a clean iRODS installation (pre-existing iRODS installations can be used if required). These binaries can then be
+used in the testing of software that depends on baton or for just seeing how iRODS and baton work in a safe environment.
 
 Thanks to the use [wtsi-hgi's baton Docker image](https://github.com/wtsi-hgi/docker-baton) and
 [agaveapi's iRODS server Docker image](https://hub.docker.com/r/agaveapi/irods/), the configuration of the test machine
 is not changed upon use of this software. 
 
 By default, a new iRODS server (running in Docker on an unused port), with a clean database, is used. If this fresh
-setup is exploited for each test case, a known test environment is ensured, thus reducing the "flakiness" of your tests.
+setup is exploited in each test case, a known test environment is ensured, thus reducing the "flakiness" of your tests.
 However, if desired, a pre-existing iRODS setup can be used.
 
-Each setup creates baton binaries<sup>*</sup> that are linked to the iRODS server. Therefore, tests cases may be ran in
-parallel without interference between them.
+Each setup creates baton-like binaries<sup>*</sup> that are linked to the iRODS server. Therefore, tests cases may be
+ran in parallel without interference between them. icommands connected to the same iRODS server are also make available.
 
 <i><sup>*</sup> These binaries are not the real baton binaries, as baton is run inside a Docker image; they are instead
 transparent "proxies" to the real binaries. However, they produce the same results and therefore are indistinguishable
@@ -34,9 +35,10 @@ in the eyes of the SUT to a real baton installation.</i>
 In ``/test_requirements.txt`` or in your ``/setup.py`` script:
 ```
 git+https://github.com/wtsi-hgi/test-with-baton.git@master#egg=testwithbaton
+git+https://github.com/wtsi-hgi/common-python.git@master#egg=hgicommon    # Required by certain helpers
 ```
-*See more about using libraries for git repositories in the 
-[pip documentation](https://pip.readthedocs.org/en/1.1/requirements.html#git).*
+*See more information about how to use packages not on PyPI in [this documentation about specifying dependencies]
+(http://python-packaging.readthedocs.org/en/latest/dependencies.html#packages-not-on-pypi).*
 
 #### API
 Basic usage:
@@ -86,15 +88,17 @@ test_with_baton.setup()
 
 To help with the setup of tests, a number of Python setup helper methods are available:
 ```python
-from testwithbaton import SetupHelper
+from testwithbaton import SetupHelper, IrodsResource
 from hgicommon.models import Metadata
 
 setup_helper = SetupHelper("icommands_location")
-setup_helper.create_data_object("file_name", file_contents="contents")
-setup_helper.create_collection("collection_name")
-setup_helper.add_metadata_to("/path/to/entity/in/irods", Metadata("attribute", "value")
-setup_helper.get_checksum("/path/to/entity/in/irods")
-setup_helper.run_icommand("icommand_binary", command_arguments=["any", "arguments"])
+setup_helper.create_data_object("name", contents="contents")   # type: str
+setup_helper.replicate_data_object("/path/to/data_object, "resourceName")
+setup_helper.create_collection("name")   # type: str
+setup_helper.add_metadata_to("/path/to/entity", Metadata({"attribute": "value"})
+setup_helper.get_checksum("/path/to/entity")   # type: str
+setup_helper.create_replica_storage()   # type: IrodsResource
+setup_helper.run_icommand("icommand_binary", command_arguments=["any", "arguments"])    # type: str
 ```
 
 

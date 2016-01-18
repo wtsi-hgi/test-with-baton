@@ -2,10 +2,12 @@ import os
 import shutil
 import subprocess
 import tempfile
-from typing import List
+from typing import List, Tuple, Union
 from uuid import uuid4
 
 from hgicommon.collections import Metadata
+
+from testwithbaton.models import IrodsResource
 
 
 class SetupHelper:
@@ -45,12 +47,14 @@ class SetupHelper:
 
         return "%s/%s" % (self.run_icommand("ipwd"), name)
 
-    def replicate_data_object(self, location: str, replicate_to: str):
+    def replicate_data_object(self, location: str, replicate_to: Union[str, IrodsResource]):
         """
         Replicates the data object in the given location to the given resource.
         :param location: the location of the data object that is to be replicated
-        :param replicate_to: the name of the resource to which the data object should be replicated to
+        :param replicate_to: the resource or name of the resource to which the data object should be replicated to
         """
+        if isinstance(replicate_to, IrodsResource):
+            replicate_to = replicate_to.name
         self.run_icommand("irepl", ["-R", replicate_to, location])
 
     def create_collection(self, name: str) -> str:
@@ -99,16 +103,16 @@ class SetupHelper:
         checksum_out = self.run_icommand("ichksum", [path])
         return checksum_out.split('\n')[0].rsplit(' ', 1)[-1]
 
-    def create_replica_storage(self) -> str:
+    def create_replica_storage(self) -> IrodsResource:
         """
         Creates replica storage resource.
-        :return: the name of the storage resource
+        :return: resource on which replicas can be stored
         """
         name = str(uuid4())
         location = "/tmp/%s" % name
         self.run_icommand(
                 "iadmin", ["mkresc", "'%s'" % name, "'unix file system'", "cache", "localhost", "'%s'" % location])
-        return name
+        return IrodsResource(name, location)
 
     def run_icommand(self, icommand_binary: str, command_arguments: List[str]=None) -> str:
         """

@@ -25,7 +25,7 @@ class TestSetupHelper(unittest.TestCase):
         self.assertTrue(ils.startswith("/"))
         self.assertTrue(ils.endswith(":"))
 
-    def test_create_data_object_with_file_path_opposed_to_file_name(self):
+    def test_create_data_object_with_path_opposed_to_name(self):
         self.assertRaises(ValueError, self.setup_helper.create_data_object, "/test")
 
     def test_create_data_object(self):
@@ -38,11 +38,11 @@ class TestSetupHelper(unittest.TestCase):
 
     def test_replicate_data_object(self):
         data_object_location = self.setup_helper.create_data_object(_DATA_OBJECT_NAME)
-        resource_name = self.setup_helper.create_replica_storage()
-        self.setup_helper.replicate_data_object(data_object_location, resource_name)
+        resource = self.setup_helper.create_replica_storage()
+        self.setup_helper.replicate_data_object(data_object_location, resource)
 
         collection_listing = self.setup_helper.run_icommand("ils", ["-l"])
-        self.assertIn("1 %s" % resource_name[0:20], collection_listing)
+        self.assertIn("1 %s" % resource.name[0:20], collection_listing)
 
     def test_create_collection(self):
         collection_name = "collection"
@@ -75,9 +75,10 @@ class TestSetupHelper(unittest.TestCase):
         self.assertEquals(self.setup_helper.get_checksum(path), "900150983cd24fb0d6963f7d28e17f72")
 
     def test_create_replica_storage(self):
-        resource_name = self.setup_helper.create_replica_storage()
-        resource_info = self.setup_helper.run_icommand("iadmin",  ["lr", resource_name])
-        self.assertIn("resc_name: %s" % resource_name, resource_info)
+        resource = self.setup_helper.create_replica_storage()
+        resource_info = self.setup_helper.run_icommand("iadmin",  ["lr", resource.name])
+        self.assertIn("resc_name: %s" % resource.name, resource_info)
+        self.assertIn("resc_def_path: %s" % resource.location, resource_info)
 
     def tearDown(self):
         self.test_with_baton.tear_down()
