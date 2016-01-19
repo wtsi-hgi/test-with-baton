@@ -47,15 +47,15 @@ class SetupHelper:
 
         return "%s/%s" % (self.run_icommand("ipwd"), name)
 
-    def replicate_data_object(self, location: str, replicate_to: Union[str, IrodsResource]):
+    def replicate_data_object(self, path: str, replicate_to: Union[str, IrodsResource]):
         """
-        Replicates the data object in the given location to the given resource.
-        :param location: the location of the data object that is to be replicated
+        Replicates the data object in the given path to the given resource.
+        :param path: the path of the data object that is to be replicated
         :param replicate_to: the resource or name of the resource to which the data object should be replicated to
         """
         if isinstance(replicate_to, IrodsResource):
             replicate_to = replicate_to.name
-        self.run_icommand("irepl", ["-R", replicate_to, location])
+        self.run_icommand("irepl", ["-R", replicate_to, path])
 
     def create_collection(self, name: str) -> str:
         """
@@ -70,33 +70,43 @@ class SetupHelper:
 
         return "%s/%s" % (self.run_icommand("ipwd"), name)
 
-    def add_metadata_to(self, location: str, metadata: Metadata):
+    def add_metadata_to(self, path: str, metadata: Metadata):
         """
-        Adds the given metadata to the entity at the given location in iRODS.
-        :param location: the location to add metadata to (could correspond to a collection or data object)
+        Adds the given metadata to the entity at the given path in iRODS.
+        :param path: the path to add metadata to (could correspond to a collection or data object)
         :param metadata: the metadata to add
         """
-        type_flag = "-c" if self.is_collection(location) else "-d"
+        type_flag = "-c" if self.is_collection(path) else "-d"
 
         for key, values in metadata.items():
             if not isinstance(values, list) and not isinstance(values, set):
                 values = [values]
             assert type(values) != str
             for value in values:
-                self.run_icommand("imeta", ["add", type_flag, location, key, str(value)])
+                self.run_icommand("imeta", ["add", type_flag, path, key, str(value)])
 
-    def is_collection(self, location: str) -> bool:
+    def is_collection(self, path: str) -> bool:
         """
-        Checks whether the given location in iRODS is a collection.
-        :param location: the location to check
-        :return: whether there is a collection at the given location
+        Checks whether the given path in iRODS is a collection.
+        :param path: the path to check
+        :return: whether there is a collection at the given path
         """
-        listing = self.run_icommand("ils", [location])
+        listing = self.run_icommand("ils", [path])
         return ":" in listing
+
+    def update_checksums(self, path: str):
+        """
+        Forces iRODS to update the checksums of all replicas of the data object with the path given/all data objects
+        in the collection given (recursive).
+        :param path: the path to the data object/collection
+        """
+        self.run_icommand("ichksum", ["-f", "-a", "-r", path])
 
     def get_checksum(self, path: str) -> str:
         """
-        Gets the checksum of the given data object on iRODS.
+        Gets the checksum of the most recently updated replica of a data object on iRODS.
+
+        If not stored in iRODS, the checksum will be calculated and stored as an unavoidable side-effect.
         :param path: the path to the data object
         :return: the checksum of the data object
         """

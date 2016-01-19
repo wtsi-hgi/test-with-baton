@@ -2,7 +2,7 @@ import unittest
 
 from hgicommon.collections import Metadata
 
-from testwithbaton.api import TestWithBatonSetup
+from testwithbaton import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
 _METADATA = Metadata(
@@ -70,6 +70,18 @@ class TestSetupHelper(unittest.TestCase):
         retrieved_metadata = self.setup_helper.run_icommand("imeta", ["ls", "-c", path])
         self._assert_metadata_in_retrieved(_METADATA, retrieved_metadata)
 
+    def test_update_checksums(self):
+        path = self.setup_helper.create_data_object(_DATA_OBJECT_NAME, "abc")
+        resource = self.setup_helper.create_replica_storage()
+        self.setup_helper.replicate_data_object(_DATA_OBJECT_NAME, resource)
+
+        # Asserting that checksum is not stored before now
+        assert "900150983cd24fb0d6963f7d28e17f72" not in self.setup_helper.run_icommand("ils", ["-L", path])
+        self.setup_helper.update_checksums(path)
+
+        ils = self.setup_helper.run_icommand("ils", ["-L", path])
+        self.assertEquals(ils.count("900150983cd24fb0d6963f7d28e17f72"), 2)
+
     def test_get_checksum(self):
         path = self.setup_helper.create_data_object(_DATA_OBJECT_NAME, "abc")
         self.assertEquals(self.setup_helper.get_checksum(path), "900150983cd24fb0d6963f7d28e17f72")
@@ -85,7 +97,7 @@ class TestSetupHelper(unittest.TestCase):
 
     def _assert_metadata_in_retrieved(self, metadata: Metadata, retrieved_metadata: str):
         """
-        Assert that the given metadata is in metadata retrieved via an `imeta` command.
+        Assert that the given metadata is in the metadata information retrieved via an `imeta` command.
         :param metadata: the metadata to expect
         :param retrieved_metadata: string representation of metadata, retrieved via an `imeta` command
         """
