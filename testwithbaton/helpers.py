@@ -3,7 +3,7 @@ import os
 import shutil
 import subprocess
 import tempfile
-from typing import List, Tuple, Union, Optional
+from typing import List, Union
 from uuid import uuid4
 
 from hgicommon.collections import Metadata
@@ -39,14 +39,14 @@ class SetupHelper:
         temp_file_path = os.path.join(temp_directory_path, name)
         os.chmod(temp_directory_path, 0o770)
 
-        with open(temp_file_path, 'w+') as temp_file:
+        with open(temp_file_path, "w+") as temp_file:
             temp_file.write(contents)
         os.chmod(temp_file_path, 0o770)
 
-        self.run_icommand("iput", [temp_file_path])
+        self.run_icommand(["iput", temp_file_path])
         shutil.rmtree(temp_directory_path)
 
-        return "%s/%s" % (self.run_icommand("ipwd"), name)
+        return "%s/%s" % (self.run_icommand(["ipwd"]), name)
 
     def replicate_data_object(self, path: str, replicate_to: Union[str, IrodsResource]):
         """
@@ -67,9 +67,9 @@ class SetupHelper:
         if "/" in name:
             raise ValueError("Collection name cannot include '/'")
 
-        self.run_icommand("imkdir", [name])
+        self.run_icommand(["imkdir", name])
 
-        return "%s/%s" % (self.run_icommand("ipwd"), name)
+        return "%s/%s" % (self.run_icommand(["ipwd"]), name)
 
     def add_metadata_to(self, path: str, metadata: Metadata):
         """

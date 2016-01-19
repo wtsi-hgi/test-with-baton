@@ -98,7 +98,7 @@ setup_helper.create_collection("name")   # type: str
 setup_helper.add_metadata_to("/path/to/entity", Metadata({"attribute": "value"})
 setup_helper.get_checksum("/path/to/entity")   # type: str
 setup_helper.create_replica_storage()   # type: IrodsResource
-setup_helper.run_icommand("icommand_binary", command_arguments=["any", "arguments"])    # type: str
+setup_helper.run_icommand(["icommand_binary", "--any", "arguments"])    # type: str
 ```
 
 
