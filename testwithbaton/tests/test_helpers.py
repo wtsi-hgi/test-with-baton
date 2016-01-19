@@ -20,7 +20,7 @@ class TestSetupHelper(unittest.TestCase):
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
     def test_run_icommand(self):
-        ils = self.setup_helper.run_icommand("ils")
+        ils = self.setup_helper.run_icommand(["ils"])
 
         self.assertTrue(ils.startswith("/"))
         self.assertTrue(ils.endswith(":"))
@@ -32,8 +32,8 @@ class TestSetupHelper(unittest.TestCase):
         contents = "Test contents"
         path = self.setup_helper.create_data_object(_DATA_OBJECT_NAME, contents=contents)
 
-        self.setup_helper.run_icommand("icd", [path.rsplit('/', 1)[-1]])
-        self.assertIn(_DATA_OBJECT_NAME, self.setup_helper.run_icommand("ils"))
+        self.setup_helper.run_icommand(["icd", path.rsplit('/', 1)[-1]])
+        self.assertIn(_DATA_OBJECT_NAME, self.setup_helper.run_icommand(["ils"]))
         # FIXME: Not testing for contents
 
     def test_replicate_data_object(self):
@@ -41,15 +41,15 @@ class TestSetupHelper(unittest.TestCase):
         resource = self.setup_helper.create_replica_storage()
         self.setup_helper.replicate_data_object(data_object_location, resource)
 
-        collection_listing = self.setup_helper.run_icommand("ils", ["-l"])
+        collection_listing = self.setup_helper.run_icommand(["ils", "-l"])
         self.assertIn("1 %s" % resource.name[0:20], collection_listing)
 
     def test_create_collection(self):
         collection_name = "collection"
         path = self.setup_helper.create_collection(collection_name)
 
-        self.setup_helper.run_icommand("icd", [path.rsplit('/', 1)[-1]])
-        self.assertIn(collection_name, self.setup_helper.run_icommand("ils"))
+        self.setup_helper.run_icommand(["icd", path.rsplit('/', 1)[-1]])
+        self.assertIn(collection_name, self.setup_helper.run_icommand(["ils"]))
 
     def test_create_collection_with_collection_path_opposed_to_collection_name(self):
         self.assertRaises(ValueError, self.setup_helper.create_collection, "/test")
@@ -59,7 +59,7 @@ class TestSetupHelper(unittest.TestCase):
 
         self.setup_helper.add_metadata_to(path, _METADATA)
 
-        retrieved_metadata = self.setup_helper.run_icommand("imeta", ["ls", "-d", path])
+        retrieved_metadata = self.setup_helper.run_icommand(["imeta", "ls", "-d", path])
         self._assert_metadata_in_retrieved(_METADATA, retrieved_metadata)
 
     def test_add_metadata_to_collection(self):
@@ -67,7 +67,7 @@ class TestSetupHelper(unittest.TestCase):
 
         self.setup_helper.add_metadata_to(path, _METADATA)
 
-        retrieved_metadata = self.setup_helper.run_icommand("imeta", ["ls", "-c", path])
+        retrieved_metadata = self.setup_helper.run_icommand(["imeta", "ls", "-c", path])
         self._assert_metadata_in_retrieved(_METADATA, retrieved_metadata)
 
     def test_update_checksums(self):
@@ -76,10 +76,10 @@ class TestSetupHelper(unittest.TestCase):
         self.setup_helper.replicate_data_object(_DATA_OBJECT_NAME, resource)
 
         # Asserting that checksum is not stored before now
-        assert "900150983cd24fb0d6963f7d28e17f72" not in self.setup_helper.run_icommand("ils", ["-L", path])
+        assert "900150983cd24fb0d6963f7d28e17f72" not in self.setup_helper.run_icommand(["ils", "-L", path])
         self.setup_helper.update_checksums(path)
 
-        ils = self.setup_helper.run_icommand("ils", ["-L", path])
+        ils = self.setup_helper.run_icommand(["ils", "-L", path])
         self.assertEquals(ils.count("900150983cd24fb0d6963f7d28e17f72"), 2)
 
     def test_get_checksum(self):
@@ -88,7 +88,7 @@ class TestSetupHelper(unittest.TestCase):
 
     def test_create_replica_storage(self):
         resource = self.setup_helper.create_replica_storage()
-        resource_info = self.setup_helper.run_icommand("iadmin",  ["lr", resource.name])
+        resource_info = self.setup_helper.run_icommand(["iadmin", "lr", resource.name])
         self.assertIn("resc_name: %s" % resource.name, resource_info)
         self.assertIn("resc_def_path: %s" % resource.location, resource_info)
 

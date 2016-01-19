@@ -50,6 +50,7 @@ class IrodsResource(Model):
     """
     Model of a iRODS server resource.
     """
-    def __init__(self, name: str, location: str):
+    def __init__(self, name: str, host: str, location: str):
         self.name = name
+        self.host = host
         self.location = location

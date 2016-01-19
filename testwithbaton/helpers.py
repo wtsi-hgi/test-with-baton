@@ -1,8 +1,9 @@
+import logging
 import os
 import shutil
 import subprocess
 import tempfile
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 from uuid import uuid4
 
 from hgicommon.collections import Metadata
@@ -55,7 +56,7 @@ class SetupHelper:
         """
         if isinstance(replicate_to, IrodsResource):
             replicate_to = replicate_to.name
-        self.run_icommand("irepl", ["-R", replicate_to, path])
+        self.run_icommand(["irepl", "-R", replicate_to, path])
 
     def create_collection(self, name: str) -> str:
         """
@@ -83,7 +84,7 @@ class SetupHelper:
                 values = [values]
             assert type(values) != str
             for value in values:
-                self.run_icommand("imeta", ["add", type_flag, path, key, str(value)])
+                self.run_icommand(["imeta", "add", type_flag, path, key, str(value)])
 
     def is_collection(self, path: str) -> bool:
         """
@@ -91,7 +92,7 @@ class SetupHelper:
         :param path: the path to check
         :return: whether there is a collection at the given path
         """
-        listing = self.run_icommand("ils", [path])
+        listing = self.run_icommand(["ils", path])
         return ":" in listing
 
     def update_checksums(self, path: str):
@@ -100,7 +101,7 @@ class SetupHelper:
         in the collection given (recursive).
         :param path: the path to the data object/collection
         """
-        self.run_icommand("ichksum", ["-f", "-a", "-r", path])
+        self.run_icommand(["ichksum", "-f", "-a", "-r", path])
 
     def get_checksum(self, path: str) -> str:
         """
@@ -110,7 +111,7 @@ class SetupHelper:
         :param path: the path to the data object
         :return: the checksum of the data object
         """
-        checksum_out = self.run_icommand("ichksum", [path])
+        checksum_out = self.run_icommand(["ichksum", path])
         return checksum_out.split('\n')[0].rsplit(' ', 1)[-1]
 
     def create_replica_storage(self) -> IrodsResource:
@@ -120,25 +121,30 @@ class SetupHelper:
         """
         name = str(uuid4())
         location = "/tmp/%s" % name
+        host = "localhost"
         self.run_icommand(
-                "iadmin", ["mkresc", "'%s'" % name, "'unix file system'", "cache", "localhost", "'%s'" % location])
-        return IrodsResource(name, location)
+                ["iadmin", "mkresc", "'%s'" % name, "'unix file system'", "cache", "%s" % host, "'%s'" % location])
+        return IrodsResource(name, host, location)
 
-    def run_icommand(self, icommand_binary: str, command_arguments: List[str]=None) -> str:
+    def run_icommand(self, arguments: Union[str, List[str]], deprecated_arguments: List[str]=None) -> str:
         """
         Executes the given icommand binary with any arguments, returning the stdout as a string and raising an
         exception if stderr is written to.
-        :param icommand_binary: the binary to execute
-        :param command_arguments: command arguments
+        :param arguments: the binary to execute (must be icommand binary with no path, e.g. ["ils", args]) and arguments
+        :param deprecated_arguments: (deprecated - pass after binary in first argument) command arguments
         :return: the output written to stdout by the icommand that was executed
         """
-        binary_path = os.path.join(self.icommands_location, icommand_binary)
-        arguments = [binary_path]
-        if command_arguments is not None:
-            arguments += command_arguments
+        if isinstance(arguments, str):
+            logging.warning("Use of a string denoting the icommand binary with an optinal list of arguments is "
+                            "depreciated - combine both in a single list")
+            arguments = [arguments]
+            if deprecated_arguments is not None:
+                arguments += deprecated_arguments
 
-        process = subprocess.Popen(
-            arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        binary_path = os.path.join(self.icommands_location, arguments[0])
+        arguments[0] = binary_path
+
+        process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         out, error = process.communicate()
 
         if len(error) != 0:

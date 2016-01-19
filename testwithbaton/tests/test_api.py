@@ -20,7 +20,7 @@ class TestTestWithBatonSetup(unittest.TestCase):
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
     def test_can_use_icommand_binary(self):
-        self.assertEquals(self.setup_helper.run_icommand("ils"),
+        self.assertEquals(self.setup_helper.run_icommand(["ils"]),
                           "/iplant/home/%s:" % self.test_with_baton.irods_test_server.users[0].username)
 
     def test_can_use_baton_binary(self):
@@ -58,7 +58,7 @@ class TestTestWithBatonSetup(unittest.TestCase):
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
-        ienv_output = self.setup_helper.run_icommand("ienv")
+        ienv_output = self.setup_helper.run_icommand(["ienv"])
 
         port = -1
         for line in ienv_output.split('\n'):
