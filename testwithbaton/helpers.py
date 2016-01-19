@@ -135,8 +135,8 @@ class SetupHelper:
         :return: the output written to stdout by the icommand that was executed
         """
         if isinstance(arguments, str):
-            logging.warning("Use of a string denoting the icommand binary with an optinal list of arguments is "
-                            "depreciated - combine both in a single list")
+            logging.warning("Use of a string denoting the icommand binary with an optional list of arguments is "
+                            "depreciated - combine both in a single list, given as the first argument")
             arguments = [arguments]
             if deprecated_arguments is not None:
                 arguments += deprecated_arguments
