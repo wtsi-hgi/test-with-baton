@@ -105,7 +105,7 @@ def _create_irods_server_container(docker_client: Client) -> Tuple[dict, int]:
     # Note: Unlike with Docker cli, docker-py does not appear to search for images on Docker Hub if they are not found
     # when building
     logging.info("Pulling iRODs server Docker image: %s - this may take a few minutes" % _IRODS_TEST_SERVER_DOCKER)
-    response = [line for line in docker_client.pull(_IRODS_TEST_SERVER_DOCKER)]
+    response = docker_client.pull(_IRODS_TEST_SERVER_DOCKER)
     logging.debug(response)
 
     container_name = create_unique_container_name("irods")
