@@ -19,7 +19,7 @@ def create_client() -> Client:
         raise ConnectionError(
             "Cannot connect to Docker - is the Docker daemon running? `$DOCKER_HOST` should be set.")
 
-    return Client(**kwargs_from_env(assert_hostname=False))
+    return Client(**kwargs_from_env(assert_hostname=False), version="auto")
 
 
 def create_unique_container_name(name_hint: str="") -> str:
