@@ -108,6 +108,9 @@ def _create_docker_run_command(
     to_execute = "\"%s\" \"%s\"" % (binary_name.replace('"', '\\"'), entry.replace('"', '\\"'))
     user = irods_test_server.users[0]
 
+    if irods_test_server.host == "localhost" or irods_test_server.host == "127.0.0.1":
+        other = "-p %s:%s %s" % (irods_test_server.port, irods_test_server.port, other)
+
     return "docker run -i --rm " \
            "-e IRODS_USERNAME='%s' " \
            "-e IRODS_HOST='%s' " \
