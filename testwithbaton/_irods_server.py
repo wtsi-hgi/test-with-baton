@@ -1,11 +1,10 @@
 import logging
 import os
 import tempfile
-from typing import Tuple
 
 from docker import Client
 
-from testwithbaton._common import create_unique_container_name, get_open_port, find_ip
+from testwithbaton._common import create_unique_container_name
 from testwithbaton.models import ContainerisedIrodsServer, IrodsUser, IrodsServer
 
 _IRODS_CONFIG_FILE_NAME = ".irodsEnv"
@@ -27,11 +26,23 @@ def create_irods_test_server(docker_client: Client) -> ContainerisedIrodsServer:
     :param docker_client: a Docker client
     :return: model of the created iRODS server
     """
-    container, port = _create_irods_server_container(docker_client)
-    hostname = find_ip(docker_client)
-    users = [IrodsUser(_IRODS_TEST_SERVER_USERNAME, _IRODS_TEST_SERVER_PASSWORD, _IRODS_TEST_SERVER_ZONE, True)]
+    # Note: Unlike with Docker cli, docker-py does not appear to search for images on Docker Hub if they are not found
+    # when building
+    logging.info("Pulling iRODs server Docker image: %s - this may take a few minutes" % _IRODS_TEST_SERVER_DOCKER)
+    response = docker_client.pull(_IRODS_TEST_SERVER_DOCKER)
+    logging.debug(response)
 
-    return ContainerisedIrodsServer(container, hostname, port, users)
+    container_name = create_unique_container_name("irods")
+    logging.info("Creating iRODs server Docker container: %s" % container_name)
+    container = docker_client.create_container(image=_IRODS_TEST_SERVER_DOCKER, name=container_name)
+
+    irods_server = ContainerisedIrodsServer()
+    irods_server.native_object = container
+    irods_server.name = container_name
+    irods_server.users = [
+        IrodsUser(_IRODS_TEST_SERVER_USERNAME, _IRODS_TEST_SERVER_PASSWORD, _IRODS_TEST_SERVER_ZONE, True)
+    ]
+    return irods_server
 
 
 def start_irods(docker_client: Client, irods_test_server: ContainerisedIrodsServer):
@@ -40,12 +51,12 @@ def start_irods(docker_client: Client, irods_test_server: ContainerisedIrodsServ
     :param docker_client: the Docker client used to start the server
     :param irods_test_server: the server setup
     """
-    logging.info("Starting iRODS server in Docker container on PORT: %d" % irods_test_server.port)
-    docker_client.start(irods_test_server.container)
+    logging.info("Starting iRODS server in Docker container")
+    docker_client.start(irods_test_server.native_object)
 
     # Block until iRODS is setup
     logging.info("Waiting for iRODS server to have setup")
-    for line in docker_client.logs(irods_test_server.container, stream=True):
+    for line in docker_client.logs(irods_test_server.native_object, stream=True):
         logging.debug(line)
         if "exited: irods" in str(line):
             break
@@ -87,34 +98,3 @@ def create_irods_server_connection_settings_volume(irods_server: IrodsServer) ->
     write_irods_server_connection_settings(connection_file, irods_server)
 
     return temp_directory
-
-
-def _create_irods_server_container(docker_client: Client) -> Tuple[dict, int]:
-    """
-    Create iRODs test server.
-    :param docker_client: the Docker client
-    :return: a tuple where the first element is the created iRODS container and the second is the PORT that it is
-    connected to the local machine on
-    """
-    open_port = get_open_port()
-
-    host_config = docker_client.create_host_config(port_bindings={
-        1247: open_port,
-    })
-
-    # Note: Unlike with Docker cli, docker-py does not appear to search for images on Docker Hub if they are not found
-    # when building
-    logging.info("Pulling iRODs server Docker image: %s - this may take a few minutes" % _IRODS_TEST_SERVER_DOCKER)
-    response = docker_client.pull(_IRODS_TEST_SERVER_DOCKER)
-    logging.debug(response)
-
-    container_name = create_unique_container_name("irods")
-    logging.info("Creating iRODs server Docker container: %s" % container_name)
-    container = docker_client.create_container(
-        image=_IRODS_TEST_SERVER_DOCKER, name=container_name, host_config=host_config, ports=[open_port])
-
-    # FIXME:
-    container["Id"] = container_name
-    open_port = 1247
-
-    return container, open_port
