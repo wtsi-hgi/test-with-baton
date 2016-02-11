@@ -3,6 +3,15 @@ from typing import List
 from hgicommon.models import Model
 
 
+class Container:
+    """
+    Model of a Docker container.
+    """
+    def __init__(self, native_object: dict, name: str):
+        self.native_object = native_object
+        self.name = name
+
+
 class IrodsUser(Model):
     """
     Model of an iRODS user.
@@ -18,21 +27,18 @@ class IrodsServer(Model):
     """
     Model of an iRODS server.
     """
-    def __init__(self, host: str, port: int, users: List[IrodsUser]):
-        if not isinstance(port, int):
-            raise ValueError("Port number must be an integer: `%s` given" % port.__class__)
+    def __init__(self, host: str=None, port: int=None, users: List[IrodsUser]=None):
         self.host = host
         self.port = port
-        self.users = users
+        self.users = [] if users is None else users     # type: List[IrodsUser]
 
 
-class ContainerisedIrodsServer(IrodsServer):
+class ContainerisedIrodsServer(IrodsServer, Container):
     """
     Model of an iRODS server that runs in a container.
     """
-    def __init__(self, container: dict, host: str, port: int, users: List[IrodsUser]):
-        super(ContainerisedIrodsServer, self).__init__(host, port, users)
-        self.container = container
+    def __init__(self):
+        super().__init__()
 
 
 class BatonDockerBuild(Model):

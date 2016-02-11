@@ -64,8 +64,8 @@ class TestWithBatonSetup:
         RUNNING = 1,
         STOPPED = 2
 
-    def __init__(
-            self, irods_test_server: IrodsServer=None, baton_docker_build: BatonDockerBuild=_DEFAULT_BATON_DOCKER_BUILD):
+    def __init__(self, irods_test_server: IrodsServer=None,
+                 baton_docker_build: BatonDockerBuild=_DEFAULT_BATON_DOCKER_BUILD):
         """
         Constructor.
         :param irods_test_server: a pre-configured, running iRODS server to use in the tests
@@ -140,7 +140,7 @@ class TestWithBatonSetup:
         logging.debug("Killing iRODS test server")
         docker_client = create_client()
         try:
-            docker_client.kill(self.irods_test_server.container)
+            docker_client.kill(self.irods_test_server.native_object)
         except Exception as error:
             logging.error(error)
         self.irods_test_server = None

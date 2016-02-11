@@ -34,8 +34,8 @@ class SetupHelper:
 
         # XXX: Using the default setup of Docker, the temp directory that Python uses cannot be mounted on Mac.
         # As a work around, mounting in the directory in which the test is running in.
-        accesible_directory = os.path.dirname(os.path.realpath(__file__))
-        temp_directory_path = tempfile.mkdtemp(prefix=".iput-", dir=accesible_directory)
+        accessible_directory = os.path.dirname(os.path.realpath(__file__))
+        temp_directory_path = tempfile.mkdtemp(prefix=".iput-", dir=accessible_directory)
         temp_file_path = os.path.join(temp_directory_path, name)
         os.chmod(temp_directory_path, 0o770)
 
