@@ -5,7 +5,7 @@ from typing import Tuple
 
 from docker import Client
 
-from testwithbaton._common import create_unique_container_name, get_open_port, find_hostname
+from testwithbaton._common import create_unique_container_name, get_open_port, find_ip
 from testwithbaton.models import ContainerisedIrodsServer, IrodsUser, IrodsServer
 
 _IRODS_CONFIG_FILE_NAME = ".irodsEnv"
@@ -28,7 +28,7 @@ def create_irods_test_server(docker_client: Client) -> ContainerisedIrodsServer:
     :return: model of the created iRODS server
     """
     container, port = _create_irods_server_container(docker_client)
-    hostname = find_hostname(docker_client)
+    hostname = find_ip(docker_client)
     users = [IrodsUser(_IRODS_TEST_SERVER_USERNAME, _IRODS_TEST_SERVER_PASSWORD, _IRODS_TEST_SERVER_ZONE, True)]
 
     return ContainerisedIrodsServer(container, hostname, port, users)
@@ -112,5 +112,9 @@ def _create_irods_server_container(docker_client: Client) -> Tuple[dict, int]:
     logging.info("Creating iRODs server Docker container: %s" % container_name)
     container = docker_client.create_container(
         image=_IRODS_TEST_SERVER_DOCKER, name=container_name, host_config=host_config, ports=[open_port])
+
+    # FIXME:
+    container["Id"] = container_name
+    open_port = 1247
 
     return container, open_port

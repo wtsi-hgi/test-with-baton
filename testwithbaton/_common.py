@@ -33,13 +33,13 @@ def create_unique_container_name(name_hint: str="") -> str:
     return "%s%s" % (name_hint, uuid4())
 
 
-def find_hostname(docker_client: Client) -> str:
+def find_ip(docker_client: Client) -> str:
     """
-    Finds the hostname of the given Docker client.
+    Finds the url of the given Docker client.
     :param docker_client: the client to find the hostname of
     :return: the hostname of the client
     """
-    docker_url = kwargs_from_env(assert_hostname=False)["base_url"]
+    docker_url = docker_client.base_url
     parsed_docker_url = urlparse(docker_url)
     hostname = parsed_docker_url.hostname
     assert hostname is not None

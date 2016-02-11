@@ -1,7 +1,9 @@
+import logging
 import os
 import subprocess
 import unittest
 import uuid
+from time import sleep
 
 from testwithbaton._common import create_client
 from testwithbaton._irods_server import create_irods_test_server, start_irods
@@ -28,8 +30,8 @@ class TestTestWithBatonSetup(unittest.TestCase):
                                    stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, error = process.communicate()
 
-        self.assertEquals(str.strip(out.decode("utf-8")), "{\"avus\":[]}")
-        self.assertEquals(error, None)
+        self.assertEqual(str.strip(out.decode("utf-8")), "{\"avus\":[]}")
+        self.assertEqual(error, None)
 
     def test_tear_down(self):
         baton_location = self.test_with_baton.baton_location
@@ -67,7 +69,7 @@ class TestTestWithBatonSetup(unittest.TestCase):
                 break
         assert port != -1
 
-        self.assertEquals(port, irods_server.port)
+        self.assertEqual(port, irods_server.port)
 
     def test_can_use_custom_baton_docker(self):
         external_unique_identifier = str(uuid.uuid4())
@@ -126,11 +128,11 @@ class TestGetIrodsServerFromEnvironmentIfDefined(unittest.TestCase):
         os.environ[IrodsEnvironmentKey.IRODS_ZONE.value] = TestGetIrodsServerFromEnvironmentIfDefined.ZONE
 
         irods_server = get_irods_server_from_environment_if_defined()
-        self.assertEquals(irods_server.host, TestGetIrodsServerFromEnvironmentIfDefined.HOST)
-        self.assertEquals(irods_server.port, int(TestGetIrodsServerFromEnvironmentIfDefined.PORT))
-        self.assertEquals(irods_server.users[0].username, TestGetIrodsServerFromEnvironmentIfDefined.USERNAME)
-        self.assertEquals(irods_server.users[0].password, TestGetIrodsServerFromEnvironmentIfDefined.PASSWORD)
-        self.assertEquals(irods_server.users[0].zone, TestGetIrodsServerFromEnvironmentIfDefined.ZONE)
+        self.assertEqual(irods_server.host, TestGetIrodsServerFromEnvironmentIfDefined.HOST)
+        self.assertEqual(irods_server.port, int(TestGetIrodsServerFromEnvironmentIfDefined.PORT))
+        self.assertEqual(irods_server.users[0].username, TestGetIrodsServerFromEnvironmentIfDefined.USERNAME)
+        self.assertEqual(irods_server.users[0].password, TestGetIrodsServerFromEnvironmentIfDefined.PASSWORD)
+        self.assertEqual(irods_server.users[0].zone, TestGetIrodsServerFromEnvironmentIfDefined.ZONE)
 
     def tearDown(self):
         TestGetIrodsServerFromEnvironmentIfDefined._clean_environment()

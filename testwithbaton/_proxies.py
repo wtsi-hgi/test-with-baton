@@ -5,7 +5,7 @@ from typing import List
 
 from docker import Client
 
-from testwithbaton.models import IrodsServer, BatonDockerBuild
+from testwithbaton.models import IrodsServer, BatonDockerBuild, ContainerisedIrodsServer
 
 _SHEBANG = "#!/usr/bin/env bash"
 
@@ -108,8 +108,16 @@ def _create_docker_run_command(
     to_execute = "\"%s\" \"%s\"" % (binary_name.replace('"', '\\"'), entry.replace('"', '\\"'))
     user = irods_test_server.users[0]
 
+    if isinstance(irods_test_server, ContainerisedIrodsServer):
+        other = "--link %s:irods-server " % irods_test_server.container["Id"]
+        irods_test_server.host = "irods-server"
+ #       print(irods_test_server.container.id)
+
     if irods_test_server.host == "localhost" or irods_test_server.host == "127.0.0.1":
-        other = "--net=host %s" % other
+        # TODO: raise exception
+        raise ValueError("TODO")
+        pass
+        # other = "--net=host %s" % other
 
     return "docker run -i --rm " \
            "-e IRODS_USERNAME='%s' " \
