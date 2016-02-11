@@ -107,14 +107,14 @@ def _create_docker_run_command(
     """
     if irods_test_server.host == "localhost" or irods_test_server.host == "127.0.0.1":
         raise ValueError(
-            "Cannot connect to iRODS test server running on localhost - address not useful inside Docker container.")
+            "Cannot connect to iRODS test server running on localhost - address is not usable inside Docker container.")
 
     to_execute = "\"%s\" \"%s\"" % (binary_name.replace('"', '\\"'), entry.replace('"', '\\"'))
     user = irods_test_server.users[0]
 
     if isinstance(irods_test_server, ContainerisedIrodsServer):
-        other = "--link %s:irods-server %s" % (irods_test_server.name, other)
-        irods_test_server.host = "irods-server"
+        other = "--link %s:%s %s" % (irods_test_server.name, irods_test_server.name, other)
+        irods_test_server.host = irods_test_server.name
         irods_test_server.port = 1247
 
     assert irods_test_server.host is not None

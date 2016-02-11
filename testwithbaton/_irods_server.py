@@ -34,7 +34,7 @@ def create_irods_test_server(docker_client: Client) -> ContainerisedIrodsServer:
 
     container_name = create_unique_container_name("irods")
     logging.info("Creating iRODs server Docker container: %s" % container_name)
-    container = docker_client.create_container(image=_IRODS_TEST_SERVER_DOCKER, name=container_name)
+    container = docker_client.create_container(image=_IRODS_TEST_SERVER_DOCKER, name=container_name, ports=[1247])
 
     irods_server = ContainerisedIrodsServer()
     irods_server.native_object = container
