@@ -2,10 +2,10 @@ import logging
 import os
 import shutil
 import subprocess
-import tempfile
 from typing import List, Union
 from uuid import uuid4
 
+import atexit
 from hgicommon.collections import Metadata
 
 from testwithbaton.models import IrodsResource
@@ -22,7 +22,7 @@ class SetupHelper:
         """
         self.icommands_location = icommands_location
 
-    def create_data_object(self, name: str, contents: str= "") -> str:
+    def create_data_object(self, name: str, contents: str="") -> str:
         """
         Creates a test data object on iRODS with the given name and contents.
         :param name: the nane of the file to create
@@ -30,12 +30,22 @@ class SetupHelper:
         :return: the path to the created file
         """
         if "/" in name:
-            raise ValueError("File name cannot include '/'")
+            raise ValueError("Data object name cannot include '/'")
+
+        def remove_temp_folder(location: str):
+            if os.path.exists(location):
+                try:
+                    shutil.rmtree(location)
+                except OSError:
+                    pass
 
         # XXX: Using the default setup of Docker, the temp directory that Python uses cannot be mounted on Mac.
         # As a work around, mounting in the directory in which the test is running in.
         accessible_directory = os.path.dirname(os.path.realpath(__file__))
-        temp_directory_path = tempfile.mkdtemp(prefix=".iput-", dir=accessible_directory)
+        temp_directory_path = os.path.join(accessible_directory, ".iput-%s" % str(uuid4()))
+        atexit.register(remove_temp_folder, temp_directory_path)
+        os.mkdir(temp_directory_path)
+
         temp_file_path = os.path.join(temp_directory_path, name)
         os.chmod(temp_directory_path, 0o770)
 
@@ -44,7 +54,8 @@ class SetupHelper:
         os.chmod(temp_file_path, 0o770)
 
         self.run_icommand(["iput", temp_file_path])
-        shutil.rmtree(temp_directory_path)
+        remove_temp_folder(temp_directory_path)
+        atexit.unregister(remove_temp_folder)
 
         return "%s/%s" % (self.run_icommand(["ipwd"]), name)
 
