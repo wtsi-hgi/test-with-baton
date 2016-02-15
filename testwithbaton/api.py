@@ -11,11 +11,7 @@ from testwithbaton.models import IrodsServer, IrodsUser, BatonDockerBuild
 from testwithbaton._proxies import create_baton_proxy_binaries, create_icommands_proxy_binaries
 from testwithbaton._baton import build_baton_docker
 
-_DEFAULT_BATON_DOCKER_BUILD = BatonDockerBuild(
-    tag="wtsi-hgi/baton:0.16.1",
-    path="github.com/wtsi-hgi/docker-baton.git",
-    docker_file="0.16.1/irods-3.3.1/Dockerfile"
-)
+_DEFAULT_BATON_DOCKER = BatonDockerBuild("mercury/baton:0.16.1-with-irods-3.3.1")
 
 
 class IrodsEnvironmentKey(Enum):
@@ -65,8 +61,7 @@ class TestWithBatonSetup:
         RUNNING = 1,
         STOPPED = 2
 
-    def __init__(self, irods_test_server: IrodsServer=None,
-                 baton_docker_build: BatonDockerBuild=_DEFAULT_BATON_DOCKER_BUILD):
+    def __init__(self, irods_test_server: IrodsServer=None, baton_docker_build: BatonDockerBuild=_DEFAULT_BATON_DOCKER):
         """
         Constructor.
         :param irods_test_server: a pre-configured, running iRODS server to use in the tests
@@ -92,10 +87,11 @@ class TestWithBatonSetup:
             raise RuntimeError("Already been setup")
         self._state = TestWithBatonSetup._SetupState.RUNNING
 
-        # Build baton Docker
         docker_client = create_client()
-        logging.debug("Building baton Docker")
-        build_baton_docker(docker_client, self._baton_docker_build)
+        if self._baton_docker_build.docker_file is not None:
+            # baton Docker image is not in Docker Hub - build before `docker run`
+            logging.debug("Building baton Docker")
+            build_baton_docker(docker_client, self._baton_docker_build)
 
         if not self._external_irods_test_server:
             logging.debug("Creating iRODS test server")

@@ -7,7 +7,8 @@ from time import sleep
 
 from testwithbaton._common import create_client
 from testwithbaton._irods_server import create_irods_test_server, start_irods
-from testwithbaton.api import TestWithBatonSetup, IrodsEnvironmentKey, get_irods_server_from_environment_if_defined
+from testwithbaton.api import TestWithBatonSetup, IrodsEnvironmentKey, get_irods_server_from_environment_if_defined, \
+    _DEFAULT_BATON_DOCKER
 from testwithbaton.helpers import SetupHelper
 from testwithbaton.models import BatonDockerBuild
 
@@ -27,7 +28,7 @@ class TestTestWithBatonSetup(unittest.TestCase):
 
     def test_can_use_baton_binary(self):
         process = subprocess.Popen(["%s/baton" % self.test_with_baton.baton_location],
-                                   stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+                                   stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         out, error = process.communicate()
 
         self.assertEqual(str.strip(out.decode("utf-8")), "{\"avus\":[]}")
