@@ -45,9 +45,9 @@ class BatonDockerBuild(Model):
     """
     Model of a baton Docker build.
     """
-    def __init__(self, path: str, build_name: str, docker_file: str="Dockerfile", build_args: dict=()):
+    def __init__(self, tag: str=None, path: str=None, docker_file: str=None, build_args: dict=None):
+        self.tag = tag
         self.path = path
-        self.build_name = build_name
         self.docker_file = docker_file
         self.build_args = build_args
 

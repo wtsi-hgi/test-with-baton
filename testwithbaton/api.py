@@ -8,12 +8,13 @@ from typing import Union
 from testwithbaton._common import create_client
 from testwithbaton._irods_server import create_irods_test_server, start_irods
 from testwithbaton.models import IrodsServer, IrodsUser, BatonDockerBuild
-from testwithbaton._proxies import build_baton_docker, create_baton_proxy_binaries, create_icommands_proxy_binaries
+from testwithbaton._proxies import create_baton_proxy_binaries, create_icommands_proxy_binaries
+from testwithbaton._baton import build_baton_docker
 
 _DEFAULT_BATON_DOCKER_BUILD = BatonDockerBuild(
-    "github.com/wtsi-hgi/docker-baton.git",
-    "wtsi-hgi/baton:0.16.1",
-    "0.16.1/irods-3.3.1/Dockerfile"
+    tag="wtsi-hgi/baton:0.16.1",
+    path="github.com/wtsi-hgi/docker-baton.git",
+    docker_file="0.16.1/irods-3.3.1/Dockerfile"
 )
 
 
@@ -105,10 +106,8 @@ class TestWithBatonSetup:
             logging.debug("Using pre-existing iRODS server")
 
         logging.debug("Creating proxies")
-        self.baton_location = create_baton_proxy_binaries(
-                self.irods_test_server, self._baton_docker_build.build_name)
-        self.icommands_location = create_icommands_proxy_binaries(
-                self.irods_test_server, self._baton_docker_build.build_name)
+        self.baton_location = create_baton_proxy_binaries(self.irods_test_server, self._baton_docker_build.tag)
+        self.icommands_location = create_icommands_proxy_binaries(self.irods_test_server, self._baton_docker_build.tag)
         logging.debug("Setup complete")
 
     def tear_down(self):
