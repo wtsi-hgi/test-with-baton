@@ -55,13 +55,17 @@ def start_irods(docker_client: Client, irods_test_server: ContainerisedIrodsServ
     logging.info("Starting iRODS server in Docker container")
     docker_client.start(irods_test_server.native_object)
 
-    # TODO: These start checks are likely to be coupled with iRODS 3
+    # TODO: These start checks are likely to be coupled with iRODS 3.3.1
     # Block until iRODS is setup
     logging.info("Waiting for iRODS server to have setup")
     for line in docker_client.logs(irods_test_server.native_object, stream=True):
         logging.debug(line)
         if "exited: irods" in str(line):
-            break
+            if "not expected" in str(line):
+                logging.info("iRODS server did not start correctly - restarting...")
+                docker_client.restart(irods_test_server.native_object)
+            else:
+                break
 
     # Just because iRODS says it has started, it appears that it does not mean it is ready to do queries
     status_query = docker_client.exec_create(irods_test_server.name,
