@@ -4,7 +4,7 @@ import unittest
 import uuid
 
 from testwithbaton._common import create_client
-from testwithbaton._irods_server import create_irods_server, start_irods
+from testwithbaton._irods_server import start_irods
 from testwithbaton.helpers import SetupHelper
 
 from testwithbaton.api import TestWithBatonSetup, get_irods_server_from_environment_if_defined, IrodsEnvironmentKey
@@ -51,9 +51,7 @@ class TestTestWithBatonSetup(unittest.TestCase):
         self.assertRaises(RuntimeError, self.test_with_baton.setup)
 
     def test_can_use_external_irods_server(self):
-        docker_client = create_client()
-        irods_server = create_irods_server(docker_client)
-        start_irods(docker_client, irods_server)
+        irods_server = start_irods()
 
         self.test_with_baton = TestWithBatonSetup(irods_server)
         self.test_with_baton.setup()

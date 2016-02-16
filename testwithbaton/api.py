@@ -6,7 +6,7 @@ from enum import Enum, unique
 from typing import Union
 
 from testwithbaton._common import create_client
-from testwithbaton._irods_server import create_irods_server, start_irods
+from testwithbaton._irods_server import start_irods
 from testwithbaton.models import IrodsServer, IrodsUser, BatonDockerBuild
 from testwithbaton._proxies import create_baton_proxy_binaries, create_icommands_proxy_binaries
 from testwithbaton._baton import build_baton_docker
@@ -94,7 +94,7 @@ class TestWithBatonSetup:
             build_baton_docker(docker_client, self._baton_docker_build)
         else:
             # Pull Docker image from Docker Hub - not waiting until `docker run` to prevent Docker from polluting the
-            # stderr.
+            # stderr
             if ":" in self._baton_docker_build.tag:
                 repository, tag = self._baton_docker_build.tag.split(":")
             else:
@@ -103,10 +103,8 @@ class TestWithBatonSetup:
             docker_client.pull(repository, tag)
 
         if not self._external_irods_test_server:
-            logging.debug("Creating iRODS test server")
-            self.irods_server_container = create_irods_server(docker_client)
             logging.debug("Starting iRODS test server")
-            self.irods_server_container = start_irods(docker_client, self.irods_server_container)
+            self.irods_server_container = start_irods()
             logging.debug("iRODS test server has started")
         else:
             logging.debug("Using pre-existing iRODS server")
