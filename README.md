@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/wtsi-hgi/test-with-baton.svg)](https://travis-ci.org/wtsi-hgi/test-with-baton)
+[![codecov.io](https://codecov.io/github/wtsi-hgi/test-with-baton/coverage.svg?branch=master)](https://codecov.io/github/wtsi-hgi/test-with-baton?branch=master)
+
 # Test with baton
 Test with baton exploits [Docker](http://docker.com) to simplify the testing of software that depends on
 [baton](https://github.com/wtsi-npg/baton).
