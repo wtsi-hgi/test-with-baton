@@ -1,10 +1,12 @@
 import logging
 import os
 import tempfile
+from time import sleep
 
+import atexit
 from docker import Client
 
-from testwithbaton._common import create_unique_container_name
+from testwithbaton._common import create_unique_container_name, create_client
 from testwithbaton.models import ContainerisedIrodsServer, IrodsUser, IrodsServer
 
 _IRODS_CONFIG_FILE_NAME = ".irodsEnv"
@@ -20,46 +22,27 @@ _IRODS_TEST_SERVER_PASSWORD = "rods"
 _IRODS_TEST_SERVER_ZONE = "iplant"
 
 
-def create_irods_test_server(docker_client: Client) -> ContainerisedIrodsServer:
-    """
-    Creates an iRODS test server in a Docker container.
-    :param docker_client: a Docker client
-    :return: model of the created iRODS server
-    """
-    # Note: Unlike with Docker cli, docker-py does not appear to search for images on Docker Hub if they are not found
-    # when building
-    logging.info("Pulling iRODs server Docker image: %s - this may take a few minutes" % _IRODS_TEST_SERVER_DOCKER)
-    response = docker_client.pull(_IRODS_TEST_SERVER_DOCKER)
-    logging.debug(response)
-
-    container_name = create_unique_container_name("irods")
-    logging.info("Creating iRODs server Docker container: %s" % container_name)
-    container = docker_client.create_container(image=_IRODS_TEST_SERVER_DOCKER, name=container_name, ports=[1247])
-
-    irods_server = ContainerisedIrodsServer()
-    irods_server.native_object = container
-    irods_server.name = container_name
-    irods_server.users = [
-        IrodsUser(_IRODS_TEST_SERVER_USERNAME, _IRODS_TEST_SERVER_PASSWORD, _IRODS_TEST_SERVER_ZONE, True)
-    ]
-    return irods_server
-
-
-def start_irods(docker_client: Client, irods_test_server: ContainerisedIrodsServer):
+def start_irods():
     """
     Starts iRODS server.
-    :param docker_client: the Docker client used to start the server
-    :param irods_test_server: the server setup
     """
     logging.info("Starting iRODS server in Docker container")
-    docker_client.start(irods_test_server.native_object)
 
-    # Block until iRODS is setup
-    logging.info("Waiting for iRODS server to have setup")
-    for line in docker_client.logs(irods_test_server.native_object, stream=True):
-        logging.debug(line)
-        if "exited: irods" in str(line):
-            break
+    irods_server_container = None
+    started = False
+    while not started:
+        docker_client = create_client()
+        irods_server_container = _create_irods_server(docker_client)
+        atexit.register(docker_client.kill, irods_server_container.native_object)
+        docker_client.start(irods_server_container.native_object)
+
+        started = _wait_for_start(docker_client, irods_server_container)
+        if not started:
+            logging.warning("iRODS server did not start correctly - restarting...")
+            docker_client.kill(irods_server_container.native_object)
+
+    assert irods_server_container is not None
+    return irods_server_container
 
 
 def write_irods_server_connection_settings(write_settings_file_to: str, irods_server: IrodsServer):
@@ -87,7 +70,7 @@ def write_irods_server_connection_settings(write_settings_file_to: str, irods_se
 def create_irods_server_connection_settings_volume(irods_server: IrodsServer) -> str:
     """
     Creates a directory that contains the iRODS connection settings for the given server.
-    :param irods_server:
+    :param docker_client: the Docker client used to start the server
     :return: the location of the "volume" (i.e. directory) containing the configuration
     """
     temp_directory = tempfile.mkdtemp(prefix="irods-config-")
@@ -98,3 +81,56 @@ def create_irods_server_connection_settings_volume(irods_server: IrodsServer) ->
     write_irods_server_connection_settings(connection_file, irods_server)
 
     return temp_directory
+
+
+def _create_irods_server(docker_client: Client) -> ContainerisedIrodsServer:
+    """
+    Creates an iRODS test server in a Docker container.
+    :param docker_client: a Docker client
+    :return: model of the created iRODS server
+    """
+    # Note: Unlike with Docker cli, docker-py does not appear to search for images on Docker Hub if they are not found
+    # when building
+    logging.info("Pulling iRODs server Docker image: %s - this may take a few minutes" % _IRODS_TEST_SERVER_DOCKER)
+    response = docker_client.pull(_IRODS_TEST_SERVER_DOCKER)
+    logging.debug(response)
+
+    container_name = create_unique_container_name("irods")
+    logging.info("Creating iRODs server Docker container: %s" % container_name)
+    container = docker_client.create_container(image=_IRODS_TEST_SERVER_DOCKER, name=container_name, ports=[1247])
+
+    irods_server = ContainerisedIrodsServer()
+    irods_server.native_object = container
+    irods_server.name = container_name
+    irods_server.users = [
+        IrodsUser(_IRODS_TEST_SERVER_USERNAME, _IRODS_TEST_SERVER_PASSWORD, _IRODS_TEST_SERVER_ZONE, True)
+    ]
+    return irods_server
+
+
+def _wait_for_start(docker_client: Client, irods_test_server: ContainerisedIrodsServer) -> bool:
+    """
+    Waits for the givne containerized iRODS server to start.
+    FIXME: These start checks are likely to be coupled with iRODS 3.3.1
+    :param docker_client: the Docker client
+    :param irods_test_server: the containerised server
+    """
+    # Block until iRODS says that is has started
+    logging.info("Waiting for iRODS server to have setup")
+    for line in docker_client.logs(irods_test_server.native_object, stream=True):
+        logging.debug(line)
+        if "exited: irods" in str(line):
+            if "not expected" in str(line):
+                return False
+            else:
+                break
+
+    # Just because iRODS says it has started, it appears that it does not mean it is ready to do queries
+    status_query = docker_client.exec_create(irods_test_server.name,
+                                       "su - irods -c \"/home/irods/iRODS/irodsctl --verbose status\"", stdout=True)
+    while "No servers running" in docker_client.exec_start(status_query).decode("utf8"):
+        # Nothing else to check on - just sleep it out
+        logging.info("Still waiting on iRODS setup")
+        sleep(0.5)
+
+    return True

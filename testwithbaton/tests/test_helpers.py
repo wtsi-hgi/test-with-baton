@@ -108,3 +108,8 @@ class TestSetupHelper(unittest.TestCase):
 
             for value in attribute_values:
                 self.assertIn("attribute: %s\nvalue: %s" % (attribute, value), retrieved_metadata)
+
+
+
+if __name__ == "__main__":
+    unittest.main()
