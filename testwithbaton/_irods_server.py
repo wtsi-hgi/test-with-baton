@@ -1,6 +1,7 @@
 import logging
 import os
 import tempfile
+from time import sleep
 
 from docker import Client
 
@@ -54,12 +55,21 @@ def start_irods(docker_client: Client, irods_test_server: ContainerisedIrodsServ
     logging.info("Starting iRODS server in Docker container")
     docker_client.start(irods_test_server.native_object)
 
+    # TODO: These start checks are likely to be coupled with iRODS 3
     # Block until iRODS is setup
     logging.info("Waiting for iRODS server to have setup")
     for line in docker_client.logs(irods_test_server.native_object, stream=True):
         logging.debug(line)
         if "exited: irods" in str(line):
             break
+
+    # Just because iRODS says it has started, it appears that it does not mean it is ready to do queries
+    status_query = docker_client.exec_create(irods_test_server.name,
+                                       "su - irods -c \"/home/irods/iRODS/irodsctl --verbose status\"", stdout=True)
+    while "No servers running" in docker_client.exec_start(status_query).decode("utf8"):
+        # Nothing else to check on - just sleep it out
+        logging.info("Still waiting on iRODS setup")
+        sleep(0.5)
 
 
 def write_irods_server_connection_settings(write_settings_file_to: str, irods_server: IrodsServer):
