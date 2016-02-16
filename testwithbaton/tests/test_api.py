@@ -1,15 +1,13 @@
-import logging
 import os
 import subprocess
 import unittest
 import uuid
-from time import sleep
 
 from testwithbaton._common import create_client
-from testwithbaton._irods_server import create_irods_test_server, start_irods
-from testwithbaton.api import TestWithBatonSetup, IrodsEnvironmentKey, get_irods_server_from_environment_if_defined, \
-    _DEFAULT_BATON_DOCKER
+from testwithbaton._irods_server import create_irods_server, start_irods
 from testwithbaton.helpers import SetupHelper
+
+from testwithbaton.api import TestWithBatonSetup, get_irods_server_from_environment_if_defined, IrodsEnvironmentKey
 from testwithbaton.models import BatonDockerBuild
 
 
@@ -28,7 +26,7 @@ class TestTestWithBatonSetup(unittest.TestCase):
 
     def test_can_use_baton_binary(self):
         process = subprocess.Popen(["%s/baton" % self.test_with_baton.baton_location],
-                                   stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                                   stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=None)
         out, error = process.communicate()
 
         self.assertEqual(str.strip(out.decode("utf-8")), "{\"avus\":[]}")
@@ -54,7 +52,7 @@ class TestTestWithBatonSetup(unittest.TestCase):
 
     def test_can_use_external_irods_server(self):
         docker_client = create_client()
-        irods_server = create_irods_test_server(docker_client)
+        irods_server = create_irods_server(docker_client)
         start_irods(docker_client, irods_server)
 
         self.test_with_baton = TestWithBatonSetup(irods_server)

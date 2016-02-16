@@ -20,7 +20,7 @@ _IRODS_TEST_SERVER_PASSWORD = "rods"
 _IRODS_TEST_SERVER_ZONE = "iplant"
 
 
-def create_irods_test_server(docker_client: Client) -> ContainerisedIrodsServer:
+def create_irods_server(docker_client: Client) -> ContainerisedIrodsServer:
     """
     Creates an iRODS test server in a Docker container.
     :param docker_client: a Docker client
