@@ -118,7 +118,6 @@ def _wait_for_start(docker_client: Client, irods_test_server: ContainerisedIrods
     # Block until iRODS says that is has started
     logging.info("Waiting for iRODS server to have setup")
     for line in docker_client.logs(irods_test_server.native_object, stream=True):
-        logging.root.setLevel(logging.DEBUG)
         logging.debug(line)
         if "exited: irods" in str(line):
             if "not expected" in str(line):
