@@ -22,9 +22,10 @@ _IRODS_TEST_SERVER_PASSWORD = "rods"
 _IRODS_TEST_SERVER_ZONE = "iplant"
 
 
-def start_irods():
+def start_irods() -> IrodsServer:
     """
     Starts iRODS server.
+    :return: the started iRODS server
     """
     logging.info("Starting iRODS server in Docker container")
 

@@ -13,7 +13,7 @@ a clean iRODS installation (pre-existing iRODS installations can be used if requ
 used in the testing of software that depends on baton or for just seeing how iRODS and baton work in a safe environment.
 
 Thanks to the use [wtsi-hgi's baton Docker image](https://github.com/wtsi-hgi/docker-baton) and
-[agaveapi's iRODS server Docker image](https://hub.docker.com/r/agaveapi/irods/), the configuration of the test machine
+[wtsi-hgi's iRODS server Docker image](https://hub.docker.com/r/mercury/icat), the configuration of the test machine
 is not changed upon use of this software. 
 
 By default, a new iRODS server (running in Docker on an unused port), with a clean database, is used. If this fresh
