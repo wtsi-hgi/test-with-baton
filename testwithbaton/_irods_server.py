@@ -5,7 +5,7 @@ from time import sleep
 
 from docker import Client
 
-from testwithbaton._common import create_unique_container_name
+from testwithbaton._common import create_unique_container_name, create_client
 from testwithbaton.models import ContainerisedIrodsServer, IrodsUser, IrodsServer
 
 _IRODS_CONFIG_FILE_NAME = ".irodsEnv"
@@ -46,34 +46,28 @@ def create_irods_server(docker_client: Client) -> ContainerisedIrodsServer:
     return irods_server
 
 
-def start_irods(docker_client: Client, irods_test_server: ContainerisedIrodsServer):
+def start_irods(docker_client: Client, irods_server_container: ContainerisedIrodsServer):
     """
     Starts iRODS server.
     :param docker_client: the Docker client used to start the server
-    :param irods_test_server: the server setup
+    :param irods_server_container: the server setup
     """
     logging.info("Starting iRODS server in Docker container")
-    docker_client.start(irods_test_server.native_object)
 
-    # TODO: These start checks are likely to be coupled with iRODS 3.3.1
-    # Block until iRODS is setup
-    logging.info("Waiting for iRODS server to have setup")
-    for line in docker_client.logs(irods_test_server.native_object, stream=True):
-        logging.debug(line)
-        if "exited: irods" in str(line):
-            if "not expected" in str(line):
-                logging.info("iRODS server did not start correctly - restarting...")
-                docker_client.restart(irods_test_server.native_object)
-            else:
-                break
+    started = False
+    while not started:
+        docker_client = create_client()
+        docker_client.start(irods_server_container.native_object)
 
-    # Just because iRODS says it has started, it appears that it does not mean it is ready to do queries
-    status_query = docker_client.exec_create(irods_test_server.name,
-                                       "su - irods -c \"/home/irods/iRODS/irodsctl --verbose status\"", stdout=True)
-    while "No servers running" in docker_client.exec_start(status_query).decode("utf8"):
-        # Nothing else to check on - just sleep it out
-        logging.info("Still waiting on iRODS setup")
-        sleep(0.5)
+        started = _wait_for_start(docker_client, irods_server_container)
+        if not started:
+            logging.warning("iRODS server did not start correctly - restarting...")
+            docker_client.kill(irods_server_container.native_object)
+            irods_server_container = create_irods_server(docker_client)
+
+    return irods_server_container
+
+    # TODO: Ensure `irods_server_container` is killed...
 
 
 def write_irods_server_connection_settings(write_settings_file_to: str, irods_server: IrodsServer):
@@ -112,3 +106,33 @@ def create_irods_server_connection_settings_volume(irods_server: IrodsServer) ->
     write_irods_server_connection_settings(connection_file, irods_server)
 
     return temp_directory
+
+
+def _wait_for_start(docker_client: Client, irods_test_server: ContainerisedIrodsServer) -> bool:
+    """
+    TODO
+    TODO: These start checks are likely to be coupled with iRODS 3.3.1
+    :param docker_client:
+    :param irods_test_server:
+    :return:
+    """
+    # Block until iRODS says that is has started
+    logging.info("Waiting for iRODS server to have setup")
+    for line in docker_client.logs(irods_test_server.native_object, stream=True):
+        logging.root.setLevel(logging.DEBUG)
+        logging.debug(line)
+        if "exited: irods" in str(line):
+            if "not expected" in str(line):
+                return False
+            else:
+                break
+
+    # Just because iRODS says it has started, it appears that it does not mean it is ready to do queries
+    status_query = docker_client.exec_create(irods_test_server.name,
+                                       "su - irods -c \"/home/irods/iRODS/irodsctl --verbose status\"", stdout=True)
+    while "No servers running" in docker_client.exec_start(status_query).decode("utf8"):
+        # Nothing else to check on - just sleep it out
+        logging.info("Still waiting on iRODS setup")
+        sleep(0.5)
+
+    return True

@@ -22,7 +22,7 @@ class TestTestWithBatonSetup(unittest.TestCase):
 
     def test_can_use_icommand_binary(self):
         self.assertEquals(self.setup_helper.run_icommand(["ils"]),
-                          "/iplant/home/%s:" % self.test_with_baton.irods_test_server.users[0].username)
+                          "/iplant/home/%s:" % self.test_with_baton.irods_server_container.users[0].username)
 
     def test_can_use_baton_binary(self):
         process = subprocess.Popen(["%s/baton" % self.test_with_baton.baton_location],

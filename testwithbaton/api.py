@@ -70,7 +70,7 @@ class TestWithBatonSetup:
         # Ensure that no matter what happens, tear down is done
         atexit.register(self.tear_down)
 
-        self.irods_test_server = irods_test_server
+        self.irods_server_container = irods_test_server
         self._external_irods_test_server = irods_test_server is not None
         self._state = TestWithBatonSetup._SetupState.INIT
         self._baton_docker_build = baton_docker_build
@@ -93,7 +93,8 @@ class TestWithBatonSetup:
             logging.debug("Building baton Docker")
             build_baton_docker(docker_client, self._baton_docker_build)
         else:
-            # Pull Docker image from Docker Hub
+            # Pull Docker image from Docker Hub - not waiting until `docker run` to prevent Docker from polluting the
+            # stderr.
             if ":" in self._baton_docker_build.tag:
                 repository, tag = self._baton_docker_build.tag.split(":")
             else:
@@ -103,15 +104,16 @@ class TestWithBatonSetup:
 
         if not self._external_irods_test_server:
             logging.debug("Creating iRODS test server")
-            self.irods_test_server = create_irods_server(docker_client)
+            self.irods_server_container = create_irods_server(docker_client)
             logging.debug("Starting iRODS test server")
-            start_irods(docker_client, self.irods_test_server)
+            self.irods_server_container = start_irods(docker_client, self.irods_server_container)
+            logging.debug("iRODS test server has started")
         else:
             logging.debug("Using pre-existing iRODS server")
 
         logging.debug("Creating proxies")
-        self.baton_location = create_baton_proxy_binaries(self.irods_test_server, self._baton_docker_build.tag)
-        self.icommands_location = create_icommands_proxy_binaries(self.irods_test_server, self._baton_docker_build.tag)
+        self.baton_location = create_baton_proxy_binaries(self.irods_server_container, self._baton_docker_build.tag)
+        self.icommands_location = create_icommands_proxy_binaries(self.irods_server_container, self._baton_docker_build.tag)
         logging.debug("Setup complete")
 
     def tear_down(self):
@@ -143,10 +145,10 @@ class TestWithBatonSetup:
         logging.debug("Killing iRODS test server")
         docker_client = create_client()
         try:
-            docker_client.kill(self.irods_test_server.native_object)
+            docker_client.kill(self.irods_server_container.native_object)
         except Exception as error:
             logging.error(error)
-        self.irods_test_server = None
+        self.irods_server_container = None
 
     @staticmethod
     def _tear_down_temp_directory(directory: str):
