@@ -143,7 +143,8 @@ class TestWithBatonSetup:
         logging.debug("Killing iRODS test server")
         docker_client = create_client()
         try:
-            docker_client.kill(self.irods_server.native_object)
+            if self.irods_server is not None:
+                docker_client.kill(self.irods_server.native_object)
         except Exception as error:
             logging.error(error)
         self.irods_server = None

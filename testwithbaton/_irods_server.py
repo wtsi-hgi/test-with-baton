@@ -29,12 +29,20 @@ def start_irods() -> IrodsServer:
     """
     logging.info("Starting iRODS server in Docker container")
 
+    docker_client = create_client()
     irods_server_container = None
     started = False
+
+    def kill_container():
+        try:
+            if irods_server_container is not None:
+                docker_client.kill(irods_server_container.native_object)
+        except Exception:
+            pass
+
     while not started:
-        docker_client = create_client()
         irods_server_container = _create_irods_server(docker_client)
-        atexit.register(docker_client.kill, irods_server_container.native_object)
+        atexit.register(kill_container)
         docker_client.start(irods_server_container.native_object)
 
         started = _wait_for_start(docker_client, irods_server_container)
@@ -43,6 +51,8 @@ def start_irods() -> IrodsServer:
             docker_client.kill(irods_server_container.native_object)
 
     assert irods_server_container is not None
+    atexit.unregister(kill_container)
+    # This is a gap here where unexpected termination will leave the container running
     return irods_server_container
 
 
