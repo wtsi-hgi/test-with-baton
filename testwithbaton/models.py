@@ -7,9 +7,9 @@ class Container:
     """
     Model of a Docker container.
     """
-    def __init__(self, native_object: dict, name: str):
-        self.native_object = native_object
-        self.name = name
+    def __init__(self):
+        self.native_object = None
+        self.name = None
 
 
 class IrodsUser(Model):
@@ -28,6 +28,7 @@ class IrodsServer(Model):
     Model of an iRODS server.
     """
     def __init__(self, host: str=None, port: int=None, users: List[IrodsUser]=None):
+        super().__init__()
         self.host = host
         self.port = port
         self.users = [] if users is None else users     # type: List[IrodsUser]
