@@ -22,7 +22,7 @@ install:
   - pip install -r test_requirements.txt
 
 script:
-  - nosetests -v --with-coverage --cover-package=testwithbaton
+  - nosetests -v --with-coverage --cover-package=testwithbaton --cover-inclusive
 
 after_success:
   - codecov
