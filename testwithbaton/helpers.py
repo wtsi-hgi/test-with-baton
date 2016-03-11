@@ -6,8 +6,8 @@ from typing import List, Union
 from uuid import uuid4
 
 import atexit
-from hgicommon.collections import Metadata
 
+from testwithbaton.collections import Metadata
 from testwithbaton.models import IrodsResource
 
 

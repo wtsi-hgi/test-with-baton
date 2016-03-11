@@ -38,7 +38,6 @@ in the eyes of the SUT to a real baton installation.</i>
 In ``/test_requirements.txt`` or in your ``/setup.py`` script:
 ```
 git+https://github.com/wtsi-hgi/test-with-baton.git@master#egg=testwithbaton
-git+https://github.com/wtsi-hgi/common-python.git@master#egg=hgicommon    # Required by certain helpers
 ```
 *See more information about how to use packages not on PyPI in [this documentation about specifying dependencies]
 (http://python-packaging.readthedocs.org/en/latest/dependencies.html#packages-not-on-pypi).*
@@ -46,7 +45,7 @@ git+https://github.com/wtsi-hgi/common-python.git@master#egg=hgicommon    # Requ
 #### API
 Basic usage:
 ```python
-from testwithbaton import TestWithBatonSetup
+from testwithbaton.api import TestWithBatonSetup
 
 # Setup environment to test with baton - this could take a while on the first run (anticipate more than 2 minutes)!
 # Thanks to Docker's caching systems it should only take a couple of seconds after the first run
@@ -65,7 +64,8 @@ test_with_baton.tear_down()
 It is possible to use a pre-existing iRODS server in tests. This will make it quicker to run tests but the state of the
 environment that they run in can no longer be guaranteed, potentially making your tests flaky.
 ```python
-from testwithbaton import TestWithBatonSetup, IrodsServer, IrodsUser
+from testwithbaton.api import TestWithBatonSetup
+from testwithbaton.models import IrodsServer, IrodsUser
 
 # Define the configuration of the pre-existing iRODS server
 irods_server = IrodsServer("host", "port", [IrodsUser("username", "password", "zone")])
@@ -81,7 +81,7 @@ In addition, a pre-existing iRODS server, defined through environment variables,
 could be useful to speed up the running of tests during development but can be "turned off" during CI testing, with no
 additional code.
 ```python 
-from testwithbaton import TestWithBatonSetup, get_irods_server_from_environment_if_defined
+from testwithbaton.api import TestWithBatonSetup, get_irods_server_from_environment_if_defined
 
 # Pre-existing iRODS server used if all of the following environment variables are set:
 # IRODS_HOST, IRODS_PORT, IRODS_USERNAME, IRODS_PASSWORD, IRODS_ZONE
@@ -91,8 +91,9 @@ test_with_baton.setup()
 
 To help with the setup of tests, a number of Python setup helper methods are available:
 ```python
-from testwithbaton import SetupHelper, IrodsResource
-from hgicommon.models import Metadata
+from testwithbaton.helpers import SetupHelper
+from testwithbaton.models import IrodsResource
+from testwithbaton.collections import Metadata
 
 setup_helper = SetupHelper("icommands_location")
 setup_helper.create_data_object("name", contents="contents")   # type: str

@@ -1,8 +1,7 @@
 import unittest
 
-from hgicommon.collections import Metadata
-
-from testwithbaton import TestWithBatonSetup
+from testwithbaton.api import TestWithBatonSetup
+from testwithbaton.collections import Metadata
 from testwithbaton.helpers import SetupHelper
 
 _METADATA = Metadata(
@@ -108,7 +107,6 @@ class TestSetupHelper(unittest.TestCase):
 
             for value in attribute_values:
                 self.assertIn("attribute: %s\nvalue: %s" % (attribute, value), retrieved_metadata)
-
 
 
 if __name__ == "__main__":
