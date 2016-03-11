@@ -3,6 +3,8 @@ import subprocess
 import unittest
 import uuid
 
+import atexit
+
 from testwithbaton._common import create_client
 from testwithbaton._irods_server import start_irods
 from testwithbaton.helpers import SetupHelper
@@ -71,7 +73,7 @@ class TestTestWithBatonSetup(unittest.TestCase):
     def test_can_use_custom_baton_docker(self):
         external_unique_identifier = str(uuid.uuid4())
         custom_baton_docker_build = BatonDockerBuild(
-            tag="wtsi-hgi/baton/tests:%s-%s" % (self._testMethodName, external_unique_identifier),
+            tag="wtsi-hgi/test-with-baton/custom:%s-%s" % (self._testMethodName, external_unique_identifier),
             path="github.com/wtsi-hgi/docker-baton.git",
             docker_file="custom/irods-3.3.1/Dockerfile",
             build_args={
@@ -80,17 +82,24 @@ class TestTestWithBatonSetup(unittest.TestCase):
             }
         )
 
+        client = create_client()
         test_with_baton_with_custom_baton_docker = TestWithBatonSetup(baton_docker_build=custom_baton_docker_build)
+
+        def custom_tear_down():
+            test_with_baton_with_custom_baton_docker.tear_down()
+            client.remove_image(custom_baton_docker_build.tag, force=True, noprune=True)
+
+        atexit.register(custom_tear_down)
+
         test_with_baton_with_custom_baton_docker.setup()
 
-        client = create_client()
         tags = []
         for image in client.images():
             tags.extend(image["RepoTags"])
         self.assertIn(custom_baton_docker_build.tag, tags)
 
-        test_with_baton_with_custom_baton_docker.tear_down()
-        client.remove_image(custom_baton_docker_build.tag, force=True, noprune=True)
+        custom_tear_down()
+        atexit.unregister(custom_tear_down)
 
     def tearDown(self):
         self.test_with_baton.tear_down()
