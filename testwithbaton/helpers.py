@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import subprocess
+from enum import Enum, unique
 from typing import List, Union
 from uuid import uuid4
 
@@ -9,6 +10,17 @@ import atexit
 
 from testwithbaton.collections import Metadata
 from testwithbaton.models import IrodsResource, IrodsUser
+
+
+@unique
+class AccessLevel(Enum):
+    """
+    Entity access levels available in iRODS.
+    """
+    NONE = "null"
+    READ = "read"
+    WRITE = "write"
+    OWN = "own"
 
 
 class SetupHelper:
@@ -151,6 +163,15 @@ class SetupHelper:
             if "CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME" in e.args[0]:
                 raise ValueError("A user already exists with the given username")
         return user
+
+    def set_access(self, user_or_Group: str, level: AccessLevel, path: str):
+        """
+        Sets the given access level for a user or group on the entity at the given path in iRODS.
+        :param user_or_Group: the user or group which the access level is been set for
+        :param level: the access level
+        :param path: the path of the entity
+        """
+        self.run_icommand(["ichmod", level.value, user_or_Group, path])
 
     def run_icommand(self, arguments: Union[str, List[str]], deprecated_arguments: List[str]=None) -> str:
         """

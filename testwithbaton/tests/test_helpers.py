@@ -2,7 +2,7 @@ import unittest
 
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.collections import Metadata
-from testwithbaton.helpers import SetupHelper
+from testwithbaton.helpers import SetupHelper, AccessLevel
 from testwithbaton.models import IrodsUser
 
 _METADATA = Metadata(
@@ -105,6 +105,19 @@ class TestSetupHelper(unittest.TestCase):
         self.assertEqual(user, required_user)
         user_list = self.setup_helper.run_icommand(["iadmin", "lu"])
         self.assertIn("%s#%s" % (required_user.username, required_user.zone), user_list)
+
+    def test_set_access(self):
+        path = self.setup_helper.create_data_object(_DATA_OBJECT_NAME)
+        zone = self.test_with_baton.irods_server.users[0].zone
+        user_1 = self.setup_helper.create_user("user_1", zone)
+        user_2 = self.setup_helper.create_user("user_2", zone)
+
+        self.setup_helper.set_access(user_1.username, AccessLevel.READ, path)
+        self.setup_helper.set_access(user_2.username, AccessLevel.WRITE, path)
+
+        access_info = self.setup_helper.run_icommand(["ils", "-A", path])
+        self.assertIn("%s#%s:read object" % (user_1.username, zone), access_info)
+        self.assertIn("%s#%s:modify object" % (user_2.username, zone), access_info)
 
     def _assert_metadata_in_retrieved(self, metadata: Metadata, retrieved_metadata: str):
         """
