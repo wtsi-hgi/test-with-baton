@@ -8,7 +8,7 @@ from uuid import uuid4
 import atexit
 
 from testwithbaton.collections import Metadata
-from testwithbaton.models import IrodsResource
+from testwithbaton.models import IrodsResource, IrodsUser
 
 
 class SetupHelper:
@@ -136,6 +136,21 @@ class SetupHelper:
         self.run_icommand(
                 ["iadmin", "mkresc", "'%s'" % name, "'unix file system'", "cache", "%s" % host, "'%s'" % location])
         return IrodsResource(name, host, location)
+
+    def create_user(self, username: str, zone: str) -> IrodsUser:
+        """
+        Creates a user with a given username in the given zone.
+        :param username: the username the user should have
+        :param zone: the zone the user should be in
+        :return: the created user
+        """
+        user = IrodsUser(username, zone, None)
+        try:
+            self.run_icommand(["iadmin", "mkuser", "%s#%s" % (username, zone), "rodsuser"])
+        except RuntimeError as e:
+            if "CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME" in e.args[0]:
+                raise ValueError("A user already exists with the given username")
+        return user
 
     def run_icommand(self, arguments: Union[str, List[str]], deprecated_arguments: List[str]=None) -> str:
         """

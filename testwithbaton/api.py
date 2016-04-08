@@ -40,11 +40,9 @@ def get_irods_server_from_environment_if_defined() -> Union[None, IrodsServer]:
     return IrodsServer(
         os.environ[IrodsEnvironmentKey.IRODS_HOST.value],
         int(os.environ[IrodsEnvironmentKey.IRODS_PORT.value]),
-        [IrodsUser(
-            os.environ[IrodsEnvironmentKey.IRODS_USERNAME.value],
-            os.environ[IrodsEnvironmentKey.IRODS_PASSWORD.value],
-            os.environ[IrodsEnvironmentKey.IRODS_ZONE.value],
-        )]
+        [IrodsUser(os.environ[IrodsEnvironmentKey.IRODS_USERNAME.value],
+                   os.environ[IrodsEnvironmentKey.IRODS_ZONE.value],
+                   os.environ[IrodsEnvironmentKey.IRODS_PASSWORD.value])]
     )
 
 

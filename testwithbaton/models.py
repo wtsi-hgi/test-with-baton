@@ -16,7 +16,7 @@ class IrodsUser(Model):
     """
     Model of an iRODS user.
     """
-    def __init__(self, username: str, password: str, zone: str, admin=False):
+    def __init__(self, username: str, zone: str, password: str=None, admin=False):
         self.username = username
         self.password = password
         self.zone = zone
