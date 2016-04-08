@@ -164,14 +164,14 @@ class SetupHelper:
                 raise ValueError("A user already exists with the given username")
         return user
 
-    def set_access(self, path: str, level: AccessLevel, userOrGroup: str):
+    def set_access(self, user_or_Group: str, level: AccessLevel, path: str):
         """
         Sets the given access level for a user or group on the entity at the given path in iRODS.
-        :param path: the path of the entity
+        :param user_or_Group: the user or group which the access level is been set for
         :param level: the access level
-        :param userOrGroup: the user or group which the access level is been set for
+        :param path: the path of the entity
         """
-        self.run_icommand(["ichmod", level.value, userOrGroup, path])
+        self.run_icommand(["ichmod", level.value, user_or_Group, path])
 
     def run_icommand(self, arguments: Union[str, List[str]], deprecated_arguments: List[str]=None) -> str:
         """
