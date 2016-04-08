@@ -3,6 +3,7 @@ import unittest
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.collections import Metadata
 from testwithbaton.helpers import SetupHelper
+from testwithbaton.models import IrodsUser
 
 _METADATA = Metadata(
         {"attribute_1": ["value_1", "value_2"], "attribute_2": ["value_3", "value_4"], "attribute_3": "value_5"})
@@ -17,6 +18,9 @@ class TestSetupHelper(unittest.TestCase):
         self.test_with_baton = TestWithBatonSetup()
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
+
+    def tearDown(self):
+        self.test_with_baton.tear_down()
 
     def test_run_icommand(self):
         ils = self.setup_helper.run_icommand(["ils"])
@@ -91,8 +95,16 @@ class TestSetupHelper(unittest.TestCase):
         self.assertIn("resc_name: %s" % resource.name, resource_info)
         self.assertIn("resc_def_path: %s" % resource.location, resource_info)
 
-    def tearDown(self):
-        self.test_with_baton.tear_down()
+    def test_create_user_with_existing_username(self):
+        existing_user = self.test_with_baton.irods_server.users[0]
+        self.assertRaises(ValueError, self.setup_helper.create_user, existing_user.username, existing_user.zone)
+
+    def test_create_user(self):
+        required_user = IrodsUser("user_1", self.test_with_baton.irods_server.users[0].zone)
+        user = self.setup_helper.create_user(required_user.username, required_user.zone)
+        self.assertEqual(user, required_user)
+        user_list = self.setup_helper.run_icommand(["iadmin", "lu"])
+        self.assertIn("%s#%s" % (required_user.username, required_user.zone), user_list)
 
     def _assert_metadata_in_retrieved(self, metadata: Metadata, retrieved_metadata: str):
         """

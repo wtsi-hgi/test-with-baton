@@ -114,7 +114,7 @@ def _create_irods_server(docker_client: Client) -> ContainerisedIrodsServer:
     irods_server.native_object = container
     irods_server.name = container_name
     irods_server.users = [
-        IrodsUser(_IRODS_TEST_SERVER_USERNAME, _IRODS_TEST_SERVER_PASSWORD, _IRODS_TEST_SERVER_ZONE, True)
+        IrodsUser(_IRODS_TEST_SERVER_USERNAME, _IRODS_TEST_SERVER_ZONE, _IRODS_TEST_SERVER_PASSWORD, True)
     ]
     return irods_server
 
