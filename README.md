@@ -91,7 +91,7 @@ test_with_baton.setup()
 
 To help with the setup of tests, a number of Python setup helper methods are available:
 ```python
-from testwithbaton.helpers import SetupHelper
+from testwithbaton.helpers import SetupHelper, AccessLevel
 from testwithbaton.models import IrodsResource
 from testwithbaton.collections import Metadata
 
@@ -102,6 +102,8 @@ setup_helper.create_collection("name")   # type: str
 setup_helper.add_metadata_to("/path/to/entity", Metadata({"attribute": "value"})
 setup_helper.get_checksum("/path/to/entity")   # type: str
 setup_helper.create_replica_storage()   # type: IrodsResource
+setup_helper.create_user("username", "zone")    # type: IrodsUser
+setup_helper.set_access("username_or_group", level: AccessLevel.OWN, "/path/to/entity")
 setup_helper.run_icommand(["icommand_binary", "--any", "arguments"])    # type: str
 ```
 
