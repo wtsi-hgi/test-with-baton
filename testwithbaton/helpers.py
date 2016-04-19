@@ -100,14 +100,15 @@ class SetupHelper:
         :param path: the path to add metadata to (could correspond to a collection or data object)
         :param metadata: the metadata to add
         """
-        type_flag = "-c" if self.is_collection(path) else "-d"
+        if len(metadata) > 0:
+            type_flag = "-c" if self.is_collection(path) else "-d"
 
-        for key, values in metadata.items():
-            if not isinstance(values, list) and not isinstance(values, set):
-                values = [values]
-            assert type(values) != str
-            for value in values:
-                self.run_icommand(["imeta", "add", type_flag, path, key, str(value)])
+            for key, values in metadata.items():
+                if not isinstance(values, list) and not isinstance(values, set):
+                    values = [values]
+                assert type(values) != str
+                for value in values:
+                    self.run_icommand(["imeta", "add", type_flag, path, key, str(value)])
 
     def is_collection(self, path: str) -> bool:
         """
@@ -164,14 +165,14 @@ class SetupHelper:
                 raise ValueError("A user already exists with the given username")
         return user
 
-    def set_access(self, user_or_Group: str, level: AccessLevel, path: str):
+    def set_access(self, user_or_group: str, level: AccessLevel, path: str):
         """
         Sets the given access level for a user or group on the entity at the given path in iRODS.
-        :param user_or_Group: the user or group which the access level is been set for
+        :param user_or_group: the user or group which the access level is been set for
         :param level: the access level
         :param path: the path of the entity
         """
-        self.run_icommand(["ichmod", level.value, user_or_Group, path])
+        self.run_icommand(["ichmod", level.value, user_or_group, path])
 
     def run_icommand(self, arguments: Union[str, List[str]], deprecated_arguments: List[str]=None) -> str:
         """
