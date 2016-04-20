@@ -21,6 +21,8 @@ _IRODS_TEST_SERVER_USERNAME = "rods"
 _IRODS_TEST_SERVER_PASSWORD = "rods"
 _IRODS_TEST_SERVER_ZONE = "iplant"
 
+_IRODS_TEST_SERVER_CACHED_IMAGE = _IRODS_TEST_SERVER_DOCKER + "-setup"
+
 
 def start_irods() -> IrodsServer:
     """
@@ -41,7 +43,7 @@ def start_irods() -> IrodsServer:
             pass
 
     while not started:
-        irods_server_container = _create_irods_server(docker_client)
+        irods_server_container = _create_irods_server_container(docker_client)
         atexit.register(kill_container)
         docker_client.start(irods_server_container.native_object)
 
@@ -49,10 +51,15 @@ def start_irods() -> IrodsServer:
         if not started:
             logging.warning("iRODS server did not start correctly - restarting...")
             docker_client.kill(irods_server_container.native_object)
-
     assert irods_server_container is not None
+
+    # if len(docker_client.images(_IRODS_TEST_SERVER_CACHED_IMAGE, quiet=True)) == 0:
+    #     # Cache started container
+    #     repository, tag = _IRODS_TEST_SERVER_CACHED_IMAGE.split(":")
+    #     docker_client.commit(irods_server_container.native_object["Id"], repository=repository, tag=tag)
+
     atexit.unregister(kill_container)
-    # This is a gap here where unexpected termination will leave the container running
+    # FIXME: This is a gap here where unexpected termination will leave the container running
     return irods_server_container
 
 
@@ -94,21 +101,28 @@ def create_irods_server_connection_settings_volume(irods_server: IrodsServer) ->
     return temp_directory
 
 
-def _create_irods_server(docker_client: Client) -> ContainerisedIrodsServer:
+def _create_irods_server_container(docker_client: Client) -> ContainerisedIrodsServer:
     """
     Creates an iRODS test server in a Docker container.
     :param docker_client: a Docker client
     :return: model of the created iRODS server
     """
-    # Note: Unlike with Docker cli, docker-py does not appear to search for images on Docker Hub if they are not found
-    # when building
-    logging.info("Pulling iRODs server Docker image: %s - this may take a few minutes" % _IRODS_TEST_SERVER_DOCKER)
-    response = docker_client.pull(_IRODS_TEST_SERVER_DOCKER)
-    logging.debug(response)
+    # docker_image = docker_client.images(_IRODS_TEST_SERVER_CACHED_IMAGE, quiet=True)
+    docker_image = []
+
+    if len(docker_image) == 0:
+        docker_image = _IRODS_TEST_SERVER_DOCKER
+        # Note: Unlike with Docker cli, docker-py does not appear to search for images on Docker Hub if they are not
+        # found when building
+        logging.info("Pulling iRODs server Docker image: %s - this may take a few minutes" % docker_image)
+        response = docker_client.pull(docker_image)
+        logging.debug(response)
+    else:
+        docker_image = docker_image[0]
 
     container_name = create_unique_container_name("irods")
     logging.info("Creating iRODs server Docker container: %s" % container_name)
-    container = docker_client.create_container(image=_IRODS_TEST_SERVER_DOCKER, name=container_name, ports=[1247])
+    container = docker_client.create_container(image=docker_image, name=container_name, ports=[1247])
 
     irods_server = ContainerisedIrodsServer()
     irods_server.native_object = container
@@ -137,8 +151,8 @@ def _wait_for_start(docker_client: Client, irods_test_server: ContainerisedIrods
                 break
 
     # Just because iRODS says it has started, it appears that it does not mean it is ready to do queries
-    status_query = docker_client.exec_create(irods_test_server.name,
-                                       "su - irods -c \"/home/irods/iRODS/irodsctl --verbose status\"", stdout=True)
+    status_query = docker_client.exec_create(
+        irods_test_server.name, "su - irods -c \"/home/irods/iRODS/irodsctl --verbose status\"", stdout=True)
     while "No servers running" in docker_client.exec_start(status_query).decode("utf8"):
         # Nothing else to check on - just sleep it out
         logging.info("Still waiting on iRODS setup")
