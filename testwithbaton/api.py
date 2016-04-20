@@ -7,8 +7,9 @@ from typing import Union
 
 from testwithbaton._common import create_client
 from testwithbaton._irods_server import start_irods
+from testwithbaton._proxies import BatonProxyController
+from testwithbaton._proxies import ICommandProxyController
 from testwithbaton.models import IrodsServer, IrodsUser, BatonDockerBuild
-from testwithbaton._proxies import create_baton_proxy_binaries, create_icommands_proxy_binaries
 from testwithbaton._baton import build_baton_docker
 
 _DEFAULT_BATON_DOCKER = BatonDockerBuild("mercury/baton:0.16.1-with-irods-3.3.1")
@@ -76,6 +77,9 @@ class TestWithBatonSetup:
         self.baton_location = None
         self.icommands_location = None
 
+        self._baton_binary_proxy_controller = None  # type: BatonProxyController
+        self._icommand_binary_proxy_controller = None  # type: ICommandProxyController
+
     def setup(self):
         """
         Sets up the setup: builds the baton Docker image, starts the iRODS test server (if required) and creates the
@@ -107,10 +111,18 @@ class TestWithBatonSetup:
         else:
             logging.debug("Using pre-existing iRODS server")
 
-        logging.debug("Creating proxies")
-        self.baton_location = create_baton_proxy_binaries(self.irods_server, self._baton_docker_build.tag)
-        self.icommands_location = create_icommands_proxy_binaries(self.irods_server, self._baton_docker_build.tag)
+        self._setup_proxies()
         logging.debug("Setup complete")
+
+    def _setup_proxies(self):
+        logging.debug("Creating proxies")
+        self._baton_binary_proxy_controller = BatonProxyController(
+            self.irods_server, self._baton_docker_build.tag)
+        self.baton_location = self._baton_binary_proxy_controller.create_proxy_binaries()
+
+        self._icommand_binary_proxy_controller = ICommandProxyController(
+            self.irods_server, self._baton_docker_build.tag)
+        self.icommands_location = self._icommand_binary_proxy_controller.create_proxy_binaries()
 
     def tear_down(self):
         """
@@ -125,13 +137,20 @@ class TestWithBatonSetup:
             else:
                 logging.debug("External iRODS test server used - not tearing down")
 
-            logging.debug("Removing temp folders")
-            TestWithBatonSetup._tear_down_temp_directory(self.baton_location)
-            TestWithBatonSetup._tear_down_temp_directory(self.icommands_location)
+            logging.debug("Tearing down binary proxies")
+            self._tear_down_proxies()
             self.baton_location = None
             self.icommands_location = None
 
             logging.debug("Tear down complete")
+
+    def _tear_down_proxies(self):
+        """
+        TODO
+        """
+        self._baton_binary_proxy_controller.tear_down()
+        self._icommand_binary_proxy_controller.tear_down()
+
 
     def _tear_down_irods_test_server(self):
         """
@@ -146,14 +165,3 @@ class TestWithBatonSetup:
         except Exception as error:
             logging.error(error)
         self.irods_server = None
-
-    @staticmethod
-    def _tear_down_temp_directory(directory: str):
-        """
-        Safely tears down the given temporary directory.
-        :param directory: the directory to tear down
-        """
-        try:
-            shutil.rmtree(directory)
-        except Exception as error:
-            logging.error(error)
