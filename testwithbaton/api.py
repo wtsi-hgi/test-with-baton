@@ -148,8 +148,10 @@ class TestWithBatonSetup:
         """
         TODO
         """
-        self._baton_binary_proxy_controller.tear_down()
-        self._icommand_binary_proxy_controller.tear_down()
+        if self._baton_binary_proxy_controller is not None:
+            self._baton_binary_proxy_controller.tear_down()
+        if self._icommand_binary_proxy_controller is not None:
+            self._icommand_binary_proxy_controller.tear_down()
 
 
     def _tear_down_irods_test_server(self):

@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 from enum import Enum, unique
+from time import sleep
 from typing import List, Union
 from uuid import uuid4
 
@@ -147,7 +148,7 @@ class SetupHelper:
         location = "/tmp/%s" % name
         host = "localhost"
         self.run_icommand(
-                ["iadmin", "mkresc", "'%s'" % name, "'unix file system'", "cache", "%s" % host, "'%s'" % location])
+                ["iadmin", "mkresc", "%s" % name, "unix file system", "cache", "%s" % host, "%s" % location])
         return IrodsResource(name, host, location)
 
     def create_user(self, username: str, zone: str) -> IrodsUser:
@@ -179,7 +180,7 @@ class SetupHelper:
         Executes the given icommand binary with any arguments, returning the stdout as a string and raising an
         exception if stderr is written to.
         :param arguments: the binary to execute (must be icommand binary with no path, e.g. ["ils", args]) and arguments
-        :param deprecated_arguments: (deprecated - pass after binary in first argument) command arguments
+        :param deprecated_arguments: (deprecated - pass after binary in list given in first argument) command arguments
         :return: the output written to stdout by the icommand that was executed
         """
         if isinstance(arguments, str):
@@ -192,8 +193,9 @@ class SetupHelper:
         binary_path = os.path.join(self.icommands_location, arguments[0])
         arguments[0] = binary_path
 
-        process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, error = process.communicate()
+        logging.debug("icommand output: %s" % out)
 
         if len(error) != 0:
             raise RuntimeError("%s:\nError: %s\nOutput: %s" % (arguments, error, out))

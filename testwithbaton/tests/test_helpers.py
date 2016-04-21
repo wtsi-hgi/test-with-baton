@@ -1,4 +1,6 @@
+import logging
 import unittest
+from time import sleep
 
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.collections import Metadata
@@ -34,7 +36,6 @@ class TestSetupHelper(unittest.TestCase):
     def test_create_data_object(self):
         contents = "Test contents"
         path = self.setup_helper.create_data_object(_DATA_OBJECT_NAME, contents=contents)
-
         self.setup_helper.run_icommand(["icd", path.rsplit('/', 1)[-1]])
         self.assertIn(_DATA_OBJECT_NAME, self.setup_helper.run_icommand(["ils"]))
         # FIXME: Not testing for contents

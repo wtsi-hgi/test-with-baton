@@ -1,15 +1,13 @@
+import atexit
 import os
 import subprocess
 import unittest
 import uuid
 
-import atexit
-
 from testwithbaton._common import create_client
 from testwithbaton._irods_server import start_irods
-from testwithbaton.helpers import SetupHelper
-
 from testwithbaton.api import TestWithBatonSetup, get_irods_server_from_environment_if_defined, IrodsEnvironmentKey
+from testwithbaton.helpers import SetupHelper
 from testwithbaton.models import BatonDockerBuild
 
 
@@ -21,6 +19,9 @@ class TestTestWithBatonSetup(unittest.TestCase):
         self.test_with_baton = TestWithBatonSetup()
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
+
+    def tearDown(self):
+        self.test_with_baton.tear_down()
 
     def test_can_use_icommand_binary(self):
         self.assertEquals(self.setup_helper.run_icommand(["ils"]),
@@ -101,9 +102,6 @@ class TestTestWithBatonSetup(unittest.TestCase):
         custom_tear_down()
         atexit.unregister(custom_tear_down)
 
-    def tearDown(self):
-        self.test_with_baton.tear_down()
-
 
 class TestGetIrodsServerFromEnvironmentIfDefined(unittest.TestCase):
     """
@@ -115,7 +113,17 @@ class TestGetIrodsServerFromEnvironmentIfDefined(unittest.TestCase):
     PASSWORD = "PASSWORD"
     ZONE = "ZONE"
 
+    @staticmethod
+    def _clean_environment():
+        for key in IrodsEnvironmentKey:
+            value = os.environ.get(key.value)
+            if value is not None:
+                del os.environ[key.value]
+
     def setUp(self):
+        TestGetIrodsServerFromEnvironmentIfDefined._clean_environment()
+
+    def tearDown(self):
         TestGetIrodsServerFromEnvironmentIfDefined._clean_environment()
 
     def test_none_if_not_defined(self):
@@ -139,16 +147,6 @@ class TestGetIrodsServerFromEnvironmentIfDefined(unittest.TestCase):
         self.assertEqual(irods_server.users[0].username, TestGetIrodsServerFromEnvironmentIfDefined.USERNAME)
         self.assertEqual(irods_server.users[0].password, TestGetIrodsServerFromEnvironmentIfDefined.PASSWORD)
         self.assertEqual(irods_server.users[0].zone, TestGetIrodsServerFromEnvironmentIfDefined.ZONE)
-
-    def tearDown(self):
-        TestGetIrodsServerFromEnvironmentIfDefined._clean_environment()
-
-    @staticmethod
-    def _clean_environment():
-        for key in IrodsEnvironmentKey:
-            value = os.environ.get(key.value)
-            if value is not None:
-                del os.environ[key.value]
 
 
 if __name__ == "__main__":
