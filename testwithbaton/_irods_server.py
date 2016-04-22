@@ -53,10 +53,10 @@ def start_irods() -> IrodsServer:
             docker_client.kill(irods_server_container.native_object)
     assert irods_server_container is not None
 
-    # if len(docker_client.images(_IRODS_TEST_SERVER_CACHED_IMAGE, quiet=True)) == 0:
-    #     # Cache started container
-    #     repository, tag = _IRODS_TEST_SERVER_CACHED_IMAGE.split(":")
-    #     docker_client.commit(irods_server_container.native_object["Id"], repository=repository, tag=tag)
+    if len(docker_client.images(_IRODS_TEST_SERVER_CACHED_IMAGE, quiet=True)) == 0:
+        # Cache started container
+        repository, tag = _IRODS_TEST_SERVER_CACHED_IMAGE.split(":")
+        docker_client.commit(irods_server_container.native_object["Id"], repository=repository, tag=tag)
 
     atexit.unregister(kill_container)
     # FIXME: This is a gap here where unexpected termination will leave the container running
@@ -107,8 +107,7 @@ def _create_irods_server_container(docker_client: Client) -> ContainerisedIrodsS
     :param docker_client: a Docker client
     :return: model of the created iRODS server
     """
-    # docker_image = docker_client.images(_IRODS_TEST_SERVER_CACHED_IMAGE, quiet=True)
-    docker_image = []
+    docker_image = docker_client.images(_IRODS_TEST_SERVER_CACHED_IMAGE, quiet=True)
 
     if len(docker_image) == 0:
         docker_image = _IRODS_TEST_SERVER_DOCKER
