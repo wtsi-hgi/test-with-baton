@@ -1,16 +1,15 @@
 import atexit
 import logging
 import os
-import shutil
 from enum import Enum, unique
 from typing import Union
 
+from testwithbaton._baton import build_baton_docker
 from testwithbaton._common import create_client
-from testwithbaton._irods_server import start_irods
 from testwithbaton._proxies import BatonProxyController
 from testwithbaton._proxies import ICommandProxyController
+from testwithbaton.irods import get_irods_server_controller
 from testwithbaton.models import IrodsServer, IrodsUser, BatonDockerBuild
-from testwithbaton._baton import build_baton_docker
 
 _DEFAULT_BATON_DOCKER = BatonDockerBuild("mercury/baton:0.16.1-with-irods-3.3.1")
 
@@ -106,7 +105,7 @@ class TestWithBatonSetup:
 
         if not self._external_irods_server:
             logging.debug("Starting iRODS test server")
-            self.irods_server = start_irods()
+            self.irods_server = get_irods_server_controller().start_server()
             logging.debug("iRODS test server has started")
         else:
             logging.debug("Using pre-existing iRODS server")
@@ -152,7 +151,6 @@ class TestWithBatonSetup:
             self._baton_binary_proxy_controller.tear_down()
         if self._icommand_binary_proxy_controller is not None:
             self._icommand_binary_proxy_controller.tear_down()
-
 
     def _tear_down_irods_test_server(self):
         """

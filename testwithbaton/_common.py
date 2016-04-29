@@ -20,11 +20,11 @@ def create_client() -> Client:
     return Client(**docker_environment, version="auto")
 
 
-def create_unique_container_name(name_hint: str="") -> str:
+def create_unique_name(name_hint: str= "") -> str:
     """
-    Creates a unique build_name for the container with an optional name hint.
+    Creates a unique name with an optional name hint.
     :param name_hint: optional name hint
-    :return: unique build_name with the build_name hint if given
+    :return: unique name that includes the hint if given
     """
     if name_hint is not "":
         name_hint = "%s-" % name_hint

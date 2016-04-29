@@ -1,6 +1,4 @@
-import logging
 import unittest
-from time import sleep
 
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.collections import Metadata
