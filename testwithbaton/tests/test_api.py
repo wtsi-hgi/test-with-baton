@@ -1,31 +1,36 @@
-import atexit
 import os
 import subprocess
 import unittest
-import uuid
+from abc import ABCMeta
 
-from testwithbaton._common import create_client
-from testwithbaton.api import TestWithBatonSetup, get_irods_server_from_environment_if_defined, IrodsEnvironmentKey
+import testwithbaton
+
+from testwithbaton.api import TestWithBaton, get_irods_server_from_environment_if_defined, IrodsEnvironmentKey
 from testwithbaton.helpers import SetupHelper
 from testwithbaton.irods import get_irods_server_controller
-from testwithbaton.models import BatonDockerBuild
+from testwithbaton.tests._common import BatonImageContainer, create_tests_for_all_baton_versions
 
 
-class TestTestWithBatonSetup(unittest.TestCase):
+class TestTestWithBaton(unittest.TestCase, BatonImageContainer, metaclass=ABCMeta):
     """
-    Unit tests for `TestWithBatonSetup`.
+    Unit tests for `TestWithBaton`.
     """
     def setUp(self):
-        self.test_with_baton = TestWithBatonSetup()
+        self.irods_server_controller = get_irods_server_controller(self.baton_image.irods_version)
+        self.irods_server = self.irods_server_controller.start_server()
+        self.test_with_baton = TestWithBaton(self.irods_server, self.baton_image)
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
     def tearDown(self):
+        self.irods_server_controller.stop_server(self.irods_server)
         self.test_with_baton.tear_down()
 
     def test_can_use_icommand_binary(self):
-        self.assertEquals(self.setup_helper.run_icommand(["ils"]),
-                          "/iplant/home/%s:" % self.test_with_baton.irods_server.users[0].username)
+        user = self.irods_server.users[0]
+        zone = user.zone
+        username = user.username
+        self.assertEquals(self.setup_helper.run_icommand(["ils"]), "/%s/home/%s:" % (zone, username))
 
     def test_can_use_baton_binary(self):
         process = subprocess.Popen(["%s/baton" % self.test_with_baton.baton_location],
@@ -53,54 +58,13 @@ class TestTestWithBatonSetup(unittest.TestCase):
         self.test_with_baton.tear_down()
         self.assertRaises(RuntimeError, self.test_with_baton.setup)
 
-    def test_can_use_external_irods_server(self):
-        irods_server = get_irods_server_controller().start_server()
 
-        self.test_with_baton = TestWithBatonSetup(irods_server)
-        self.test_with_baton.setup()
-        self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
-
-        ienv_output = self.setup_helper.run_icommand(["ienv"])
-
-        port = -1
-        for line in ienv_output.split('\n'):
-            if "irodsPort" in line:
-                port = int(line.split('=')[1])
-                break
-        assert port != -1
-
-        self.assertEqual(port, irods_server.port)
-
-    def test_can_use_custom_baton_docker(self):
-        external_unique_identifier = str(uuid.uuid4())
-        custom_baton_docker_build = BatonDockerBuild(
-            tag="wtsi-hgi/test-with-baton/custom:%s-%s" % (self._testMethodName, external_unique_identifier),
-            path="github.com/wtsi-hgi/docker-baton.git",
-            docker_file="custom/irods-3.3.1/Dockerfile",
-            build_args={
-                "REPOSITORY": "https://github.com/wtsi-npg/baton.git",
-                "BRANCH": "release-0.16.1"
-            }
-        )
-
-        client = create_client()
-        test_with_baton_with_custom_baton_docker = TestWithBatonSetup(baton_docker_build=custom_baton_docker_build)
-
-        def custom_tear_down():
-            test_with_baton_with_custom_baton_docker.tear_down()
-            client.remove_image(custom_baton_docker_build.tag, force=True, noprune=True)
-
-        atexit.register(custom_tear_down)
-
-        test_with_baton_with_custom_baton_docker.setup()
-
-        tags = []
-        for image in client.images():
-            tags.extend(image["RepoTags"])
-        self.assertIn(custom_baton_docker_build.tag, tags)
-
-        custom_tear_down()
-        atexit.unregister(custom_tear_down)
+# Create tests for all baton versions
+create_tests_for_all_baton_versions(TestTestWithBaton)
+for name, value in testwithbaton.tests._common.__dict__.items():
+    if TestTestWithBaton.__name__ in name:
+        globals()[name] = value
+del TestTestWithBaton
 
 
 class TestGetIrodsServerFromEnvironmentIfDefined(unittest.TestCase):

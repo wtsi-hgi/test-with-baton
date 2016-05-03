@@ -1,25 +1,33 @@
 import unittest
+from abc import ABCMeta
 
-from testwithbaton.api import TestWithBatonSetup
+import testwithbaton
+
+from testwithbaton.api import TestWithBaton
 from testwithbaton.collections import Metadata
 from testwithbaton.helpers import SetupHelper, AccessLevel
+from testwithbaton.irods import get_irods_server_controller
 from testwithbaton.models import IrodsUser
+from testwithbaton.tests._common import create_tests_for_all_baton_versions, BatonImageContainer
 
 _METADATA = Metadata(
         {"attribute_1": ["value_1", "value_2"], "attribute_2": ["value_3", "value_4"], "attribute_3": "value_5"})
 _DATA_OBJECT_NAME = "data-object-name"
 
 
-class TestSetupHelper(unittest.TestCase):
+class TestSetupHelper(unittest.TestCase, BatonImageContainer, metaclass=ABCMeta):
     """
     Tests for `SetupHelper`.
     """
     def setUp(self):
-        self.test_with_baton = TestWithBatonSetup()
+        self.irods_server_controller = get_irods_server_controller(self.baton_image.irods_version)
+        self.irods_server = self.irods_server_controller.start_server()
+        self.test_with_baton = TestWithBaton(self.irods_server)
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
     def tearDown(self):
+        self.irods_server_controller.stop_server(self.irods_server)
         self.test_with_baton.tear_down()
 
     def test_run_icommand(self):
@@ -131,6 +139,14 @@ class TestSetupHelper(unittest.TestCase):
 
             for value in attribute_values:
                 self.assertIn("attribute: %s\nvalue: %s" % (attribute, value), retrieved_metadata)
+
+
+# Create tests for all baton versions
+create_tests_for_all_baton_versions(TestSetupHelper)
+for name, value in testwithbaton.tests._common.__dict__.items():
+    if TestSetupHelper.__name__ in name:
+        globals()[name] = value
+del TestSetupHelper
 
 
 if __name__ == "__main__":
