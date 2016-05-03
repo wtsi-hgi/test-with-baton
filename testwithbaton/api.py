@@ -6,12 +6,19 @@ from typing import Union
 
 from testwithbaton._baton import build_baton_docker
 from testwithbaton._common import create_client
-from testwithbaton._proxies import BatonProxyController
-from testwithbaton._proxies import ICommandProxyController
-from testwithbaton.irods import get_irods_server_controller
-from testwithbaton.models import IrodsServer, IrodsUser, BatonDockerBuild
+from testwithbaton._proxies import BatonProxyController, ICommandProxyController
+from testwithbaton.irods import get_irods_server_controller, IrodsVersion
+from testwithbaton.models import IrodsServer, IrodsUser, BatonImage
 
-_DEFAULT_BATON_DOCKER = BatonDockerBuild("mercury/baton:0.16.1-with-irods-3.3.1")
+@unique
+class BatonImageVersion(Enum):
+    v0_16_1_WITH_IRODS_3_3_1 = BatonImage("mercury/baton:0.16.1-with-irods-3.3.1", IrodsVersion.v3_3_1)
+    v0_16_2_WITH_IRODS_3_3_1 = BatonImage("mercury/baton:0.16.2-with-irods-3.3.1", IrodsVersion.v3_3_1)
+    v0_16_2_WITH_IRODS_4_1_8 = BatonImage("mercury/baton:0.16.2-with-irods-4.1.8", IrodsVersion.v4_1_8)
+
+LATEST_BATON_WITH_IRODS_3 = BatonImageVersion.v0_16_2_WITH_IRODS_3_3_1
+LATEST_BATON_WITH_IRODS_4 = BatonImageVersion.v0_16_2_WITH_IRODS_4_1_8
+DEFAULT_BATON_DOCKER = LATEST_BATON_WITH_IRODS_3
 
 
 class IrodsEnvironmentKey(Enum):
@@ -46,32 +53,32 @@ def get_irods_server_from_environment_if_defined() -> Union[None, IrodsServer]:
     )
 
 
-class TestWithBatonSetup:
+class TestWithBaton:
     """
     A setup for testing with baton.
     """
     @unique
     class _SetupState(Enum):
         """
-        States of a `TestWithBatonSetup` instance.
+        States of a `TestWithBaton` instance.
         """
         INIT = 0,
         RUNNING = 1,
         STOPPED = 2
 
-    def __init__(self, irods_server: IrodsServer=None, baton_docker_build: BatonDockerBuild=_DEFAULT_BATON_DOCKER):
+    def __init__(self, irods_server: IrodsServer=None, baton_image: BatonImage=DEFAULT_BATON_DOCKER.value):
         """
         Constructor.
         :param irods_server: a pre-configured, running iRODS server to use in the tests
-        :param baton_docker_build: baton Docker that is to be built and used
+        :param baton_image: baton Docker image that is to be used
         """
         # Ensure that no matter what happens, tear down is done
         atexit.register(self.tear_down)
 
         self.irods_server = irods_server
         self._external_irods_server = irods_server is not None
-        self._state = TestWithBatonSetup._SetupState.INIT
-        self._baton_docker_build = baton_docker_build
+        self._state = TestWithBaton._SetupState.INIT
+        self._baton_docker_build = baton_image
 
         self.baton_location = None
         self.icommands_location = None
@@ -84,9 +91,9 @@ class TestWithBatonSetup:
         Sets up the setup: builds the baton Docker image, starts the iRODS test server (if required) and creates the
         proxies.
         """
-        if self._state != TestWithBatonSetup._SetupState.INIT:
+        if self._state != TestWithBaton._SetupState.INIT:
             raise RuntimeError("Already been setup")
-        self._state = TestWithBatonSetup._SetupState.RUNNING
+        self._state = TestWithBaton._SetupState.RUNNING
 
         docker_client = create_client()
         if self._baton_docker_build.docker_file is not None:
@@ -127,8 +134,8 @@ class TestWithBatonSetup:
         """
         Tear down the test environment.
         """
-        if self._state == TestWithBatonSetup._SetupState.RUNNING:
-            self._state = TestWithBatonSetup._SetupState.STOPPED
+        if self._state == TestWithBaton._SetupState.RUNNING:
+            self._state = TestWithBaton._SetupState.STOPPED
             atexit.unregister(self.tear_down)
 
             if not self._external_irods_server:

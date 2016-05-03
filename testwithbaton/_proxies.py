@@ -23,9 +23,9 @@ class ProxyController(metaclass=ABCMeta):
     @staticmethod
     def _reduce_whitespace(commands: str) -> str:
         """
-        TODO
-        :param commands:
-        :return:
+        Reduces the whitespace in the given command.
+        :param commands: the command to reduce whitespace from
+        :return: command with reduced whitespace
         """
         commands = commands.replace("    ", "")
         commands = commands.strip()
@@ -117,7 +117,7 @@ class ProxyController(metaclass=ABCMeta):
         other_flags_set = flags != ""
         if isinstance(self._irods_test_server, ContainerisedIrodsServer):
             flags = "--link %s:%s %s" % (self._irods_test_server.name, self._irods_test_server.name, flags)
-            # TODO: Changing this probably wrong
+            # TODO: Changing this is probably wrong
             self._irods_test_server.host = self._irods_test_server.name
             self._irods_test_server.port = 1247
 

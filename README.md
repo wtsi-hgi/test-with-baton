@@ -45,18 +45,18 @@ git+https://github.com/wtsi-hgi/test-with-baton.git@master#egg=testwithbaton
 #### API
 Basic usage:
 ```python
-from testwithbaton.api import TestWithBatonSetup
+from testwithbaton.api import TestWithBaton
 
 # Setup environment to test with baton - this could take a while on the first run (anticipate more than 2 minutes)!
 # Thanks to Docker's caching systems it should only take a couple of seconds after the first run
-test_with_baton = TestWithBatonSetup()
+test_with_baton = TestWithBaton()
 test_with_baton.setup()
 
 baton_location = test_with_baton.baton_location
 icommands_location = test_with_baton.icommands_location
 # Do stuff with containerised baton via "proxies" in the `baton_location` directory. Can also use icommands
 
-# Tear down tests. `TestWithBatonSetup` uses `atexit` (https://docs.python.org/3/library/atexit.html) in the attempt to
+# Tear down tests. `TestWithBaton` uses `atexit` (https://docs.python.org/3/library/atexit.html) in the attempt to
 # ensure this is always done eventually, even if forgotten about/a failure occurs
 test_with_baton.tear_down()
 ```
@@ -64,14 +64,14 @@ test_with_baton.tear_down()
 It is possible to use a pre-existing iRODS server in tests. This will make it quicker to run tests but the state of the
 environment that they run in can no longer be guaranteed, potentially making your tests flaky.
 ```python
-from testwithbaton.api import TestWithBatonSetup
+from testwithbaton.api import TestWithBaton
 from testwithbaton.models import IrodsServer, IrodsUser
 
 # Define the configuration of the pre-existing iRODS server
 irods_server = IrodsServer("host", "port", [IrodsUser("username", "password", "zone")])
 
 # Setup test with baton
-test_with_baton = TestWithBatonSetup(irods_server)
+test_with_baton = TestWithBaton(irods_server)
 test_with_baton.setup()
 
 # Do testing
@@ -81,11 +81,11 @@ In addition, a pre-existing iRODS server, defined through environment variables,
 could be useful to speed up the running of tests during development but can be "turned off" during CI testing, with no
 additional code.
 ```python 
-from testwithbaton.api import TestWithBatonSetup, get_irods_server_from_environment_if_defined
+from testwithbaton.api import TestWithBaton, get_irods_server_from_environment_if_defined
 
 # Pre-existing iRODS server used if all of the following environment variables are set:
 # IRODS_HOST, IRODS_PORT, IRODS_USERNAME, IRODS_PASSWORD, IRODS_ZONE
-test_with_baton = TestWithBatonSetup(get_irods_server_from_environment_if_defined())
+test_with_baton = TestWithBaton(get_irods_server_from_environment_if_defined())
 test_with_baton.setup()
 ```
 

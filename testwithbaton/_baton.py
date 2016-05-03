@@ -2,10 +2,10 @@ import logging
 
 from docker import Client
 
-from testwithbaton.models import BatonDockerBuild
+from testwithbaton.models import BatonImage
 
 
-def build_baton_docker(docker_client: Client, baton_docker_build: BatonDockerBuild):
+def build_baton_docker(docker_client: Client, baton_docker_build: BatonImage):
     """
     Builds the baton Docker image.
     :param docker_client: the Docker client

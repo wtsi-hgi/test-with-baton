@@ -3,6 +3,7 @@ from typing import Dict
 
 from testwithbaton.irods import IrodsServerController
 from testwithbaton.irods._irods_3_controller import Irods3_3_1ServerController
+from testwithbaton.irods._irods_4_controller import Irods4_1_8ServerController
 
 _cached_irods_server_controllers = dict()   # type: Dict[IrodsVersion, IrodsServerController]
 
@@ -13,6 +14,7 @@ class IrodsVersion(Enum):
     Enum mapping between iRODS server versions and the related server controllers.
     """
     v3_3_1 = Irods3_3_1ServerController
+    v4_1_8 = Irods4_1_8ServerController
 
 
 def get_irods_server_controller(irods_version: IrodsVersion=IrodsVersion.v3_3_1) -> IrodsServerController:
@@ -23,4 +25,5 @@ def get_irods_server_controller(irods_version: IrodsVersion=IrodsVersion.v3_3_1)
     """
     if irods_version not in _cached_irods_server_controllers:
         _cached_irods_server_controllers[irods_version] = irods_version.value()
+    assert _cached_irods_server_controllers[irods_version] is not None
     return _cached_irods_server_controllers[irods_version]
