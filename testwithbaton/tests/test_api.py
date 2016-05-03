@@ -8,17 +8,17 @@ import testwithbaton
 from testwithbaton.api import TestWithBaton, get_irods_server_from_environment_if_defined, IrodsEnvironmentKey
 from testwithbaton.helpers import SetupHelper
 from testwithbaton.irods import get_irods_server_controller
-from testwithbaton.tests._common import BatonImageContainer, create_tests_for_all_baton_versions
+from testwithbaton.tests._common import BatonSetupContainer, create_tests_for_all_baton_setups
 
 
-class TestTestWithBaton(unittest.TestCase, BatonImageContainer, metaclass=ABCMeta):
+class TestTestWithBaton(unittest.TestCase, BatonSetupContainer, metaclass=ABCMeta):
     """
     Unit tests for `TestWithBaton`.
     """
     def setUp(self):
-        self.irods_server_controller = get_irods_server_controller(self.baton_image.irods_version)
+        self.irods_server_controller = get_irods_server_controller(self.baton_setup.value[1])
         self.irods_server = self.irods_server_controller.start_server()
-        self.test_with_baton = TestWithBaton(self.irods_server, self.baton_image)
+        self.test_with_baton = TestWithBaton(self.irods_server, self.baton_setup.value[0])
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
@@ -60,7 +60,7 @@ class TestTestWithBaton(unittest.TestCase, BatonImageContainer, metaclass=ABCMet
 
 
 # Create tests for all baton versions
-create_tests_for_all_baton_versions(TestTestWithBaton)
+create_tests_for_all_baton_setups(TestTestWithBaton)
 for name, value in testwithbaton.tests._common.__dict__.items():
     if TestTestWithBaton.__name__ in name:
         globals()[name] = value

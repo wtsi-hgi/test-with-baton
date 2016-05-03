@@ -8,21 +8,21 @@ from testwithbaton.collections import Metadata
 from testwithbaton.helpers import SetupHelper, AccessLevel
 from testwithbaton.irods import get_irods_server_controller
 from testwithbaton.models import IrodsUser
-from testwithbaton.tests._common import create_tests_for_all_baton_versions, BatonImageContainer
+from testwithbaton.tests._common import create_tests_for_all_baton_setups, BatonSetupContainer
 
 _METADATA = Metadata(
         {"attribute_1": ["value_1", "value_2"], "attribute_2": ["value_3", "value_4"], "attribute_3": "value_5"})
 _DATA_OBJECT_NAME = "data-object-name"
 
 
-class TestSetupHelper(unittest.TestCase, BatonImageContainer, metaclass=ABCMeta):
+class TestSetupHelper(unittest.TestCase, BatonSetupContainer, metaclass=ABCMeta):
     """
     Tests for `SetupHelper`.
     """
     def setUp(self):
-        self.irods_server_controller = get_irods_server_controller(self.baton_image.irods_version)
+        self.irods_server_controller = get_irods_server_controller(self.baton_setup.value[1])
         self.irods_server = self.irods_server_controller.start_server()
-        self.test_with_baton = TestWithBaton(self.irods_server)
+        self.test_with_baton = TestWithBaton(self.irods_server, self.baton_setup.value[0])
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
@@ -142,7 +142,7 @@ class TestSetupHelper(unittest.TestCase, BatonImageContainer, metaclass=ABCMeta)
 
 
 # Create tests for all baton versions
-create_tests_for_all_baton_versions(TestSetupHelper)
+create_tests_for_all_baton_setups(TestSetupHelper)
 for name, value in testwithbaton.tests._common.__dict__.items():
     if TestSetupHelper.__name__ in name:
         globals()[name] = value

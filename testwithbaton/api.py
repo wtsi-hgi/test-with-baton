@@ -11,14 +11,14 @@ from testwithbaton.irods import get_irods_server_controller, IrodsVersion
 from testwithbaton.models import IrodsServer, IrodsUser, BatonImage
 
 @unique
-class BatonImageVersion(Enum):
-    v0_16_1_WITH_IRODS_3_3_1 = BatonImage("mercury/baton:0.16.1-with-irods-3.3.1", IrodsVersion.v3_3_1)
-    v0_16_2_WITH_IRODS_3_3_1 = BatonImage("mercury/baton:0.16.2-with-irods-3.3.1", IrodsVersion.v3_3_1)
-    v0_16_2_WITH_IRODS_4_1_8 = BatonImage("mercury/baton:0.16.2-with-irods-4.1.8", IrodsVersion.v4_1_8)
+class BatonSetup(Enum):
+    v0_16_1_WITH_IRODS_3_3_1 = (BatonImage("mercury/baton:0.16.1-with-irods-3.3.1"), IrodsVersion.v3_3_1)
+    v0_16_2_WITH_IRODS_3_3_1 = (BatonImage("mercury/baton:0.16.2-with-irods-3.3.1"), IrodsVersion.v3_3_1)
+    v0_16_2_WITH_IRODS_4_1_8 = (BatonImage("mercury/baton:0.16.2-with-irods-4.1.8"), IrodsVersion.v4_1_8)
 
-LATEST_BATON_WITH_IRODS_3 = BatonImageVersion.v0_16_2_WITH_IRODS_3_3_1
-LATEST_BATON_WITH_IRODS_4 = BatonImageVersion.v0_16_2_WITH_IRODS_4_1_8
-DEFAULT_BATON_DOCKER = LATEST_BATON_WITH_IRODS_3
+LATEST_BATON_IMAGE_WITH_IRODS_3 = BatonSetup.v0_16_2_WITH_IRODS_3_3_1
+LATEST_BATON_IMAGE_WITH_IRODS_4 = BatonSetup.v0_16_2_WITH_IRODS_4_1_8
+DEFAULT_BATON_SETUP = LATEST_BATON_IMAGE_WITH_IRODS_3
 
 
 class IrodsEnvironmentKey(Enum):
@@ -66,7 +66,7 @@ class TestWithBaton:
         RUNNING = 1,
         STOPPED = 2
 
-    def __init__(self, irods_server: IrodsServer=None, baton_image: BatonImage=DEFAULT_BATON_DOCKER.value):
+    def __init__(self, irods_server: IrodsServer=None, baton_image: BatonImage=DEFAULT_BATON_SETUP.value[0]):
         """
         Constructor.
         :param irods_server: a pre-configured, running iRODS server to use in the tests
@@ -112,6 +112,7 @@ class TestWithBaton:
 
         if not self._external_irods_server:
             logging.debug("Starting iRODS test server")
+            # FIXME: Issue here!
             self.irods_server = get_irods_server_controller().start_server()
             logging.debug("iRODS test server has started")
         else:

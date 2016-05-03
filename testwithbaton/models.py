@@ -46,12 +46,9 @@ class BatonImage(Model):
     """
     Model of a baton Docker build.
     """
-    from testwithbaton.irods import IrodsVersion
-
-    def __init__(self, tag: str, irods_version: IrodsVersion, path: str=None, docker_file: str=None,
+    def __init__(self, tag: str, path: str=None, docker_file: str=None,
                  build_args: dict=None):
         self.tag = tag
-        self.irods_version = irods_version
         self.path = path
         self.docker_file = docker_file
         self.build_args = build_args
