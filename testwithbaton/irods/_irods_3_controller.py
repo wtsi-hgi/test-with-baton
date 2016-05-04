@@ -5,7 +5,7 @@ from abc import ABCMeta
 from time import sleep
 
 from testwithbaton.irods._irods_contoller import IrodsServerController
-from testwithbaton.models import IrodsServer, ContainerisedIrodsServer, IrodsUser
+from testwithbaton.models import IrodsServer, ContainerisedIrodsServer, IrodsUser, Version
 
 _IRODS_CONFIG_FILE_NAME = ".irodsEnv"
 
@@ -44,9 +44,14 @@ class Irods3_3_1ServerController(Irods3ServerController):
     _USERS = [
         IrodsUser("rods", "iplant", "rods", admin=True)
     ]
+    _VERSION = Version("3.3.1")
 
     def __init__(self):
-        super().__init__(Irods3_3_1ServerController._IMAGE_NAME, Irods3_3_1ServerController._USERS)
+        super().__init__(
+            Irods3_3_1ServerController._IMAGE_NAME,
+            Irods3_3_1ServerController._VERSION,
+            Irods3_3_1ServerController._USERS
+        )
 
     def _wait_for_start(self, container: ContainerisedIrodsServer) -> bool:
         logging.info("Waiting for iRODS server to have setup")

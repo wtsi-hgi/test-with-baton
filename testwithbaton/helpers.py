@@ -1,16 +1,15 @@
+import atexit
 import logging
 import os
+import re
 import shutil
 import subprocess
 from enum import Enum, unique
-from time import sleep
 from typing import List, Union
 from uuid import uuid4
 
-import atexit
-
 from testwithbaton.collections import Metadata
-from testwithbaton.models import IrodsResource, IrodsUser
+from testwithbaton.models import IrodsResource, IrodsUser, Version
 
 
 @unique
@@ -147,8 +146,11 @@ class SetupHelper:
         name = str(uuid4())
         location = "/tmp/%s" % name
         host = "localhost"
-        self.run_icommand(
+        if self.get_icat_version().major == 3:
+            self.run_icommand(
                 ["iadmin", "mkresc", "%s" % name, "unix file system", "cache", "%s" % host, "%s" % location])
+        else:
+            self.run_icommand(["iadmin", "mkresc", "%s" % name, "unixfilesystem", "%s:%s" % (host, location)])
         return IrodsResource(name, host, location)
 
     def create_user(self, username: str, zone: str) -> IrodsUser:
@@ -174,6 +176,15 @@ class SetupHelper:
         :param path: the path of the entity
         """
         self.run_icommand(["ichmod", level.value, user_or_group, path])
+
+    def get_icat_version(self) -> Version:
+        """
+        Gets the version of iCAT server being used.
+        :return: the version of iCAT server
+        """
+        ienv_out = self.run_icommand(["ienv"])
+        version_as_string = re.search("rods(.*),", ienv_out).group(1)
+        return Version(version_as_string)
 
     def run_icommand(self, arguments: Union[str, List[str]], deprecated_arguments: List[str]=None) -> str:
         """

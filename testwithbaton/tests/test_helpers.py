@@ -85,16 +85,21 @@ class TestSetupHelper(unittest.TestCase, BatonSetupContainer, metaclass=ABCMeta)
         resource = self.setup_helper.create_replica_storage()
         self.setup_helper.replicate_data_object(_DATA_OBJECT_NAME, resource)
 
+        expected_checksum = "900150983cd24fb0d6963f7d28e17f72" if self.irods_server.version.major == 3 \
+            else "sha2:ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0="
+
         # Asserting that checksum is not stored before now
-        assert "900150983cd24fb0d6963f7d28e17f72" not in self.setup_helper.run_icommand(["ils", "-L", path])
+        assert expected_checksum not in self.setup_helper.run_icommand(["ils", "-L", path])
         self.setup_helper.update_checksums(path)
 
         ils = self.setup_helper.run_icommand(["ils", "-L", path])
-        self.assertEquals(ils.count("900150983cd24fb0d6963f7d28e17f72"), 2)
+        self.assertEquals(ils.count(expected_checksum), 2)
 
     def test_get_checksum(self):
         path = self.setup_helper.create_data_object(_DATA_OBJECT_NAME, "abc")
-        self.assertEquals(self.setup_helper.get_checksum(path), "900150983cd24fb0d6963f7d28e17f72")
+        expected_checksum = "900150983cd24fb0d6963f7d28e17f72" if self.irods_server.version.major == 3 \
+            else "sha2:ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0="
+        self.assertEquals(self.setup_helper.get_checksum(path), expected_checksum)
 
     def test_create_replica_storage(self):
         resource = self.setup_helper.create_replica_storage()
@@ -125,6 +130,9 @@ class TestSetupHelper(unittest.TestCase, BatonSetupContainer, metaclass=ABCMeta)
         access_info = self.setup_helper.run_icommand(["ils", "-A", path])
         self.assertIn("%s#%s:read object" % (user_1.username, zone), access_info)
         self.assertIn("%s#%s:modify object" % (user_2.username, zone), access_info)
+
+    def test_get_icat_version(self):
+        self.assertEqual(self.setup_helper.get_icat_version(), self.irods_server.version)
 
     def _assert_metadata_in_retrieved(self, metadata: Metadata, retrieved_metadata: str):
         """

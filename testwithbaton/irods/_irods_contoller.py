@@ -8,7 +8,7 @@ from typing import Optional, Sequence
 from docker import Client
 
 from testwithbaton._common import create_unique_name, create_client
-from testwithbaton.models import ContainerisedIrodsServer, IrodsServer, IrodsUser
+from testwithbaton.models import ContainerisedIrodsServer, IrodsServer, IrodsUser, Version
 
 
 class IrodsServerController(metaclass=ABCMeta):
@@ -55,13 +55,14 @@ class IrodsServerController(metaclass=ABCMeta):
 
         return temp_directory
 
-    def __init__(self, image_name: str, users: Sequence[IrodsUser]):
+    def __init__(self, image_name: str, version: Version, users: Sequence[IrodsUser]):
         """
         Constructor.
         :param image_name:
         :param users:
         """
         self._image_name = image_name
+        self._version = version
         self._users = users
         self._docker_client = None  # type: Optional[Client]
 
@@ -86,7 +87,7 @@ class IrodsServerController(metaclass=ABCMeta):
         started = False
 
         while not started:
-            container = self._create_container(self._image_name, self._users)
+            container = self._create_container()
             atexit.register(self.stop_server, container)
             self.docker_client.start(container.native_object)
 
@@ -111,18 +112,18 @@ class IrodsServerController(metaclass=ABCMeta):
             # TODO: Should not use such a general exception
             pass
 
-    def _create_container(self, image_name: str, users: Sequence[IrodsUser]) -> ContainerisedIrodsServer:
+    def _create_container(self) -> ContainerisedIrodsServer:
         """
         Creates a iRODS server container running the given image. Will used a cached version of the image if available.
         :param image_name: the image to run
         :param users: the iRODS users
         :return: the containerised iRODS server
         """
-        cached_image_name = IrodsServerController._cached_image_name(image_name)
+        cached_image_name = IrodsServerController._cached_image_name(self._image_name)
         docker_image = self.docker_client.images(cached_image_name, quiet=True)
 
         if len(docker_image) == 0:
-            docker_image = image_name
+            docker_image = self._image_name
             # Note: Unlike with Docker cli, docker-py does not appear to search for images on Docker Hub if they are not
             # found when building
             logging.info("Pulling iRODs server Docker image: %s - this may take a few minutes" % docker_image)
@@ -138,7 +139,8 @@ class IrodsServerController(metaclass=ABCMeta):
         irods_server = ContainerisedIrodsServer()
         irods_server.native_object = container
         irods_server.name = container_name
-        irods_server.users = users
+        irods_server.version = self._version
+        irods_server.users = self._users
         return irods_server
 
     def _cache_started_container(self, container: ContainerisedIrodsServer, image_name: str):
