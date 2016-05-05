@@ -2,11 +2,9 @@ import unittest
 from abc import ABCMeta
 
 import testwithbaton
-
 from testwithbaton.api import TestWithBaton
 from testwithbaton.collections import Metadata
 from testwithbaton.helpers import SetupHelper, AccessLevel
-from testwithbaton.irods import get_irods_server_controller
 from testwithbaton.models import IrodsUser
 from testwithbaton.tests._common import create_tests_for_all_baton_setups, BatonSetupContainer
 
@@ -20,14 +18,11 @@ class TestSetupHelper(unittest.TestCase, BatonSetupContainer, metaclass=ABCMeta)
     Tests for `SetupHelper`.
     """
     def setUp(self):
-        self.irods_server_controller = get_irods_server_controller(self.baton_setup.value[1])
-        self.irods_server = self.irods_server_controller.start_server()
-        self.test_with_baton = TestWithBaton(self.irods_server, self.baton_setup.value[0])
+        self.test_with_baton = TestWithBaton(self.baton_setup.value[0], self.baton_setup.value[1])
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
     def tearDown(self):
-        self.irods_server_controller.stop_server(self.irods_server)
         self.test_with_baton.tear_down()
 
     def test_run_icommand(self):
@@ -85,7 +80,7 @@ class TestSetupHelper(unittest.TestCase, BatonSetupContainer, metaclass=ABCMeta)
         resource = self.setup_helper.create_replica_storage()
         self.setup_helper.replicate_data_object(_DATA_OBJECT_NAME, resource)
 
-        expected_checksum = "900150983cd24fb0d6963f7d28e17f72" if self.irods_server.version.major == 3 \
+        expected_checksum = "900150983cd24fb0d6963f7d28e17f72" if self.test_with_baton.irods_server.version.major == 3 \
             else "sha2:ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0="
 
         # Asserting that checksum is not stored before now
@@ -97,7 +92,7 @@ class TestSetupHelper(unittest.TestCase, BatonSetupContainer, metaclass=ABCMeta)
 
     def test_get_checksum(self):
         path = self.setup_helper.create_data_object(_DATA_OBJECT_NAME, "abc")
-        expected_checksum = "900150983cd24fb0d6963f7d28e17f72" if self.irods_server.version.major == 3 \
+        expected_checksum = "900150983cd24fb0d6963f7d28e17f72" if self.test_with_baton.irods_server.version.major == 3 \
             else "sha2:ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0="
         self.assertEquals(self.setup_helper.get_checksum(path), expected_checksum)
 
@@ -132,7 +127,7 @@ class TestSetupHelper(unittest.TestCase, BatonSetupContainer, metaclass=ABCMeta)
         self.assertIn("%s#%s:modify object" % (user_2.username, zone), access_info)
 
     def test_get_icat_version(self):
-        self.assertEqual(self.setup_helper.get_icat_version(), self.irods_server.version)
+        self.assertEqual(self.setup_helper.get_icat_version(), self.test_with_baton.irods_server.version)
 
     def _assert_metadata_in_retrieved(self, metadata: Metadata, retrieved_metadata: str):
         """

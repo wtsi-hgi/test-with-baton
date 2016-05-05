@@ -16,18 +16,15 @@ class TestTestWithBaton(unittest.TestCase, BatonSetupContainer, metaclass=ABCMet
     Unit tests for `TestWithBaton`.
     """
     def setUp(self):
-        self.irods_server_controller = get_irods_server_controller(self.baton_setup.value[1])
-        self.irods_server = self.irods_server_controller.start_server()
-        self.test_with_baton = TestWithBaton(self.irods_server, self.baton_setup.value[0])
+        self.test_with_baton = TestWithBaton(self.baton_setup.value[0], self.baton_setup.value[1])
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
     def tearDown(self):
-        self.irods_server_controller.stop_server(self.irods_server)
         self.test_with_baton.tear_down()
 
     def test_can_use_icommand_binary(self):
-        user = self.irods_server.users[0]
+        user = self.test_with_baton.irods_server.users[0]
         zone = user.zone
         username = user.username
         self.assertEquals(self.setup_helper.run_icommand(["ils"]), "/%s/home/%s:" % (zone, username))

@@ -31,12 +31,12 @@ class IrodsServer(Model):
     """
     Model of an iRODS server.
     """
-    def __init__(self, host: str=None, port: int=None, version: Version=None, users: List[IrodsUser]=None):
+    def __init__(self, host: str=None, port: int=None, users: List[IrodsUser]=None, version: Version=None):
         super().__init__()
         self.host = host
         self.port = port
-        self.version = version
         self.users = [] if users is None else users     # type: List[IrodsUser]
+        self.version = version
 
 
 class ContainerisedIrodsServer(IrodsServer, Container):
