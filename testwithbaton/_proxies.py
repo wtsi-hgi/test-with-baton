@@ -127,21 +127,21 @@ class ProxyController(metaclass=ABCMeta):
         if other_flags_set:
             return self._create_docker_run_command(to_execute, flags)
         else:
-            flags = "--name %s -d -i %s" % (self._cached_container_name, flags)
+            flags = "--name %s -d %s -i" % (self._cached_container_name, flags)
             return ProxyController._reduce_whitespace("""
                 docker_running=$(docker ps -f name=%(uuid)s | wc -l | awk '{print $1}')
                 if [ $docker_running -ne 2 ];
                 then
                     %(container_setup)s > /dev/null
                 fi
-                    docker exec %(uuid)s %(to_execute)s
+                    docker exec -i %(uuid)s %(to_execute)s
             """ % {
                 "uuid": self._cached_container_name,
                 "container_setup": self._create_docker_run_command("bash", flags),
                 "to_execute": to_execute
             })
 
-    def _create_docker_run_command(self, command: str, other: str= "") -> str:
+    def _create_docker_run_command(self, command: str, other: str="") -> str:
         """
         Creates a command to run the given entry inside a Docker container.
         :param command: the CMD entrypoint (i.e. the command executed inside the container)
@@ -211,7 +211,7 @@ class ICommandProxyController(ProxyController):
         # FIXME: allow other flags, handle no $1 given
         # FIXME: Issue mouting temp directory leads to use of current directory, which is not good!
         docker_run_command = self._create_proxy_commands("iput", arguments="\"/tmp/input/$fileName\"",
-                                                         flags="-v \"$mountDirectory\":/tmp/input:ro")
+                                                         flags="-v \"$mountDirectory\":/tmp/input:ro -i")
         commands = ProxyController._reduce_whitespace("""
             cd $(dirname "$1")
             mountDirectory=$PWD
