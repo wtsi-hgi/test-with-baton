@@ -140,6 +140,8 @@ class TestWithBaton:
 
         self._icommand_binary_proxy_controller = ICommandProxyController(
             self.irods_server, self._baton_docker_build.tag)
+        # Make icommand proxy binaries share cached container with baton proxy binaries to get a speedup
+        self._icommand_binary_proxy_controller.cached_container_name = self._baton_binary_proxy_controller.cached_container_name
         self.icommands_location = self._icommand_binary_proxy_controller.create_proxy_binaries()
 
     def tear_down(self):

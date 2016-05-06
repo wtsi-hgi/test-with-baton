@@ -46,10 +46,10 @@ class ProxyController(metaclass=ABCMeta):
         :param docker_image: the name (docker-py's "tag") of the Docker image that the proxied binaries are executed
         within
         """
+        self.cached_container_name = "binary-container-%s" % uuid4()
         self._irods_test_server = irods_test_server
         self._docker_image = docker_image
         self._temp_directories = set()     # type: Set[str]
-        self._cached_container_name = "binary-container-%s" % uuid4()
         atexit.register(self.tear_down)
 
     def tear_down(self):
@@ -62,7 +62,7 @@ class ProxyController(metaclass=ABCMeta):
 
         docker_client = create_client()
         try:
-            docker_client.remove_container(self._cached_container_name, force=True)
+            docker_client.remove_container(self.cached_container_name, force=True)
         except NotFound:
             """ Not bothered if the container had not yet been created """
 
@@ -127,16 +127,42 @@ class ProxyController(metaclass=ABCMeta):
         if other_flags_set:
             return self._create_docker_run_command(to_execute, flags)
         else:
-            flags = "--name %s -d %s -i" % (self._cached_container_name, flags)
+            flags = "--name %s -d %s -i" % (self.cached_container_name, flags)
             return ProxyController._reduce_whitespace("""
-                docker_running=$(docker ps -f name=%(uuid)s | wc -l | awk '{print $1}')
-                if [ $docker_running -ne 2 ];
+                isRunning() {
+                    [ $(docker ps -f name=%(uuid)s | wc -l | awk '{print $1}') -eq 2 ]
+                }
+
+                if ! isRunning;
                 then
-                    %(container_setup)s > /dev/null
+                    startIfNotRunning() {
+                        if ! isRunning
+                        then
+                            %(container_setup)s > /dev/null
+                        fi
+                    }
+                    lock=".%(uuid)s.lock"
+                    if type flock > /dev/null 2>&1
+                    then
+                        # Linux
+                        flock ${lock} startIfNotRunning
+                    elif type lockfile > /dev/null 2>&1
+                    then
+                        # Mac
+                        lockfile /tmp/${lock}
+                        startIfNotRunning
+                        rm -f /tmp/${lock}
+                    else
+                        # No supported lock functionality - blindly try to start it and ignore any error
+                        set +e
+                        startIfNotRunning 2> /dev/null
+                        set -e
+                    fi
                 fi
-                    docker exec -i %(uuid)s %(to_execute)s
+
+                docker exec -i %(uuid)s %(to_execute)s
             """ % {
-                "uuid": self._cached_container_name,
+                "uuid": self.cached_container_name,
                 "container_setup": self._create_docker_run_command("bash", flags),
                 "to_execute": to_execute
             })
@@ -209,7 +235,7 @@ class ICommandProxyController(ProxyController):
         :param container_directory: the icommand proxy binary container
         """
         # FIXME: allow other flags, handle no $1 given
-        # FIXME: Issue mouting temp directory leads to use of current directory, which is not good!
+        # FIXME: Issue mounting temp directory leads to use of current directory, which is not good!
         docker_run_command = self._create_proxy_commands("iput", arguments="\"/tmp/input/$fileName\"",
                                                          flags="-v \"$mountDirectory\":/tmp/input:ro -i")
         commands = ProxyController._reduce_whitespace("""
