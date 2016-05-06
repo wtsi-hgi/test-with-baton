@@ -70,13 +70,18 @@ class TestWithBaton:
         STOPPED = 2
 
     def __init__(self, baton_image: BatonImage=DEFAULT_BATON_SETUP.value[0],
-                 irods_version_to_start: IrodsVersion=DEFAULT_BATON_SETUP.value[1], irods_server: IrodsServer=None):
+                 irods_version_to_start: IrodsVersion=DEFAULT_BATON_SETUP.value[1], irods_server: IrodsServer=None,
+                 baton_setup: BatonSetup=None):
         """
         Constructor.
         :param baton_image: baton Docker image that is to be used
-        :param irods_version_to_start: TODO
-        :param irods_server: TODO
+        :param irods_version_to_start:
+        :param irods_server:
+        :param baton_setup:
         """
+        if baton_setup is not None:
+            baton_image = baton_setup.value[0]
+            irods_version_to_start = baton_setup.value[1]
         if irods_version_to_start is None and irods_server is None:
             raise ValueError("Must either define an iRODs server to use or a version of iRODS that is to be started")
         if irods_version_to_start is not None and irods_server is not None:
