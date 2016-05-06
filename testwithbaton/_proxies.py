@@ -145,7 +145,11 @@ class ProxyController(metaclass=ABCMeta):
                     if type flock > /dev/null 2>&1
                     then
                         # Linux
-                        flock ${lock} startIfNotRunning
+                        (
+                            flock 10
+                            startIfNotRunning
+                            rm -f /tmp/${lock}
+                        ) 10> /tmp/${lock}
                     elif type lockfile > /dev/null 2>&1
                     then
                         # Mac
