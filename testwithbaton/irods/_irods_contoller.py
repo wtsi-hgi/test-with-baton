@@ -5,6 +5,8 @@ import tempfile
 from abc import abstractmethod, ABCMeta
 from typing import Sequence
 
+from docker.errors import APIError
+
 from testwithbaton._common import create_unique_name, create_client
 from testwithbaton.models import ContainerisedIrodsServer, IrodsServer, IrodsUser, Version
 
@@ -134,15 +136,15 @@ class IrodsServerController(metaclass=ABCMeta):
         try:
             if container is not None:
                 IrodsServerController._DOCKER_CLIENT.kill(container.native_object)
-        except Exception:
-            # TODO: Should not use such a general exception
-            pass
+        except APIError as e:
+            if "is not running" not in str(e.explanation):
+                raise e
 
     def create_connection_settings_volume(self, config_file_name: str, irods_server: IrodsServer) -> str:
         """
-        TODO
-        :param config_file_name:
-        :param irods_server:
+        Creates a connection settings file in a directory that can be connected as a volume.
+        :param config_file_name: the configuration file name
+        :param irods_server: the iRODS server to which the settings are for
         """
         temp_directory = tempfile.mkdtemp(prefix="irods-config-")
         logging.info("Created temp directory for iRODS config: %s" % temp_directory)
