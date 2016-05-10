@@ -2,7 +2,7 @@ import atexit
 import logging
 import os
 import tempfile
-from abc import abstractmethod, ABCMeta, abstractstaticmethod
+from abc import abstractmethod, ABCMeta
 from typing import Optional, Sequence
 
 from docker import Client

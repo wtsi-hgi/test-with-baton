@@ -39,16 +39,17 @@ class ProxyController(metaclass=ABCMeta):
         :return: the directory containing the proxies
         """
 
-    def __init__(self, irods_test_server: IrodsServer, docker_image: str):
+    def __init__(self, irods_server: IrodsServer, image_with_real_binaries: str):
         """
         Constructor.
-        :param irods_test_server: the iRODS server that the proxied binaries use
-        :param docker_image: the name (docker-py's "tag") of the Docker image that the proxied binaries are executed
+        :param irods_server: the iRODS server that the proxied binaries use
+        :param image_with_real_binaries: the name (docker-py's "tag") of the Docker image that the proxied binaries are
+        executed
         within
         """
         self.cached_container_name = "binary-container-%s" % uuid4()
-        self._irods_test_server = irods_test_server
-        self._docker_image = docker_image
+        self._irods_test_server = irods_server
+        self._docker_image = image_with_real_binaries
         self._temp_directories = set()     # type: Set[str]
         atexit.register(self.tear_down)
 
