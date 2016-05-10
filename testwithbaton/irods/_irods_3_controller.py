@@ -1,4 +1,3 @@
-import atexit
 import logging
 import os
 from abc import ABCMeta
@@ -19,8 +18,7 @@ class Irods3ServerController(IrodsServerController, metaclass=ABCMeta):
     """
     Controller for containerised iRODS 3 servers.
     """
-    @staticmethod
-    def write_connection_settings(file_location: str, irods_server: IrodsServer):
+    def write_connection_settings(self, file_location: str, irods_server: IrodsServer):
         if os.path.isfile(file_location):
             raise ValueError("Settings cannot be written to a file that already exists")
 
@@ -46,16 +44,13 @@ class Irods3_3_1ServerController(Irods3ServerController):
     ]
     _VERSION = Version("3.3.1")
 
-    def __init__(self):
-        super().__init__(
-            Irods3_3_1ServerController._IMAGE_NAME,
-            Irods3_3_1ServerController._VERSION,
-            Irods3_3_1ServerController._USERS
-        )
+    def start_server(self) -> ContainerisedIrodsServer:
+        return self._start_server(Irods3_3_1ServerController._IMAGE_NAME, Irods3_3_1ServerController._VERSION,
+                           Irods3_3_1ServerController._USERS)
 
     def _wait_for_start(self, container: ContainerisedIrodsServer) -> bool:
         logging.info("Waiting for iRODS server to have setup")
-        for line in self.docker_client.logs(container.native_object, stream=True):
+        for line in IrodsServerController._DOCKER_CLIENT.logs(container.native_object, stream=True):
             logging.debug(line)
             if "exited: irods" in str(line):
                 if "not expected" in str(line):
@@ -64,11 +59,11 @@ class Irods3_3_1ServerController(Irods3ServerController):
                     break
 
         # Just because iRODS says it has started, it does not mean it is ready to do queries!
-        status_query = self.docker_client.exec_create(
+        status_query = IrodsServerController._DOCKER_CLIENT.exec_create(
             container.name, "su - irods -c \"/home/irods/iRODS/irodsctl --verbose status\"", stdout=True)
-        while "No servers running" in self.docker_client.exec_start(status_query).decode("utf8"):
+        while "No servers running" in IrodsServerController._DOCKER_CLIENT.exec_start(status_query).decode("utf8"):
             # Nothing else to check on - just sleep it out
             logging.info("Still waiting on iRODS setup")
-            sleep(0.5)
+            sleep(0.1)
 
         return True

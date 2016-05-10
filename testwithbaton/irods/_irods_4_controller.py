@@ -1,9 +1,7 @@
-import atexit
 import json
 import logging
 import os
 from abc import ABCMeta
-from time import sleep
 
 from testwithbaton.irods._irods_contoller import IrodsServerController
 from testwithbaton.models import IrodsServer, ContainerisedIrodsServer, IrodsUser, Version
@@ -20,8 +18,7 @@ class Irods4ServerController(IrodsServerController, metaclass=ABCMeta):
     """
     Controller for containerised iRODS 4 servers.
     """
-    @staticmethod
-    def write_connection_settings(file_location: str, irods_server: IrodsServer):
+    def write_connection_settings(self, file_location: str, irods_server: IrodsServer):
         if os.path.isfile(file_location):
             raise ValueError("Settings cannot be written to a file that already exists")
 
@@ -48,16 +45,13 @@ class Irods4_1_8ServerController(Irods4ServerController):
     ]
     _VERSION = Version("4.1.8")
 
-    def __init__(self):
-        super().__init__(
-            Irods4_1_8ServerController._IMAGE_NAME,
-            Irods4_1_8ServerController._VERSION,
-            Irods4_1_8ServerController._USERS
-        )
+    def start_server(self) -> ContainerisedIrodsServer:
+        return self._start_server(Irods4_1_8ServerController._IMAGE_NAME, Irods4_1_8ServerController._VERSION,
+                           Irods4_1_8ServerController._USERS)
 
     def _wait_for_start(self, container: ContainerisedIrodsServer) -> bool:
         logging.info("Waiting for iRODS server to have setup")
-        for line in self.docker_client.logs(container.native_object, stream=True):
+        for line in IrodsServerController._DOCKER_CLIENT.logs(container.native_object, stream=True):
             logging.debug(line)
             if "iRODS server started successfully!" in str(line):
                 return True

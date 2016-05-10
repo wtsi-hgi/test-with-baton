@@ -16,13 +16,6 @@ class TestIrodsServerController(unittest.TestCase, metaclass=ABCMeta):
     """
     Tests for `IrodsServerController`.
     """
-    @abstractmethod
-    def create_controller(self) -> IrodsServerController:
-        """
-        Creates a concrete `IrodsServerController` instance.
-        :return: an iRODS server controller
-        """
-
     @staticmethod
     def _is_container_running(container: ContainerisedIrodsServer) -> bool:
         """
@@ -32,6 +25,13 @@ class TestIrodsServerController(unittest.TestCase, metaclass=ABCMeta):
         """
         docker_client = create_client()
         return docker_client.inspect_container(container.native_object)["State"]["Running"]
+
+    @abstractmethod
+    def create_controller(self) -> IrodsServerController:
+        """
+        Creates a concrete `IrodsServerController` instance.
+        :return: an iRODS server controller
+        """
 
     def __init__(self, compatible_baton_image: str, irods_version: Version, *args, **kwargs):
         """
