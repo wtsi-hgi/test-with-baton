@@ -52,6 +52,9 @@ class TestIrodsServerController(unittest.TestCase, metaclass=ABCMeta):
         irods_server = self.irods_controller.start_server()
         self.assertTrue(self._is_container_running(irods_server))
 
+        repository, tag = self.compatible_baton_image.split(":")
+        create_client().pull(repository, tag)
+
         proxy_controller = ICommandProxyController(irods_server, self.compatible_baton_image)
         icommand_binaries_location = proxy_controller.create_proxy_binaries()
         setup_helper = SetupHelper(icommand_binaries_location)
