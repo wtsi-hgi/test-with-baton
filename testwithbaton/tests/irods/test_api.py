@@ -1,21 +1,24 @@
 import unittest
 
-from testwithbaton.irods._api import get_irods_server_controller, IrodsVersion
-from testwithbaton.irods._irods_3_controller import Irods3_3_1ServerController
-from testwithbaton.irods._irods_4_controller import Irods4_1_8ServerController
+from testwithbaton.irods._api import IrodsVersion, get_static_irods_server_controller
+from testwithbaton.models import Version
 
 
-class TestGetIrodsServerController(unittest.TestCase):
+class TestGetStaticIrodsServerController(unittest.TestCase):
     """
-    Tests for `get_irods_server_controller`.
+    Tests for `get_static_irods_server_controller`.
     """
     def test_get_v_3_3_1(self):
-        irods_controller = get_irods_server_controller(IrodsVersion.v3_3_1)
-        self.assertIsInstance(irods_controller, Irods3_3_1ServerController)
+        StaticIrodsController = get_static_irods_server_controller(IrodsVersion.v3_3_1)
+        irods_server = StaticIrodsController.start_server()
+        self.assertEqual(irods_server.version, Version("3.3.1"))
+        StaticIrodsController.stop_server(irods_server)
 
     def test_get_v_4_1_8(self):
-        irods_controller = get_irods_server_controller(IrodsVersion.v4_1_8)
-        self.assertIsInstance(irods_controller, Irods4_1_8ServerController)
+        StaticIrodsController = get_static_irods_server_controller(IrodsVersion.v4_1_8)
+        irods_server = StaticIrodsController.start_server()
+        self.assertEqual(irods_server.version, Version("4.1.8"))
+        StaticIrodsController.stop_server(irods_server)
 
 
 if __name__ == "__main__":

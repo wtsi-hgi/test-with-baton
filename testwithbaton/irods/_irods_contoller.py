@@ -9,6 +9,36 @@ from testwithbaton._common import create_unique_name, create_client
 from testwithbaton.models import ContainerisedIrodsServer, IrodsServer, IrodsUser, Version
 
 
+class StaticIrodsServerController():
+    """
+    Static iRODS server controller.
+    """
+    @staticmethod
+    @abstractmethod
+    def start_server() -> ContainerisedIrodsServer:
+        """
+        Starts a containerised iRODS server and blocks until it is ready to be used.
+        :return: the started containerised iRODS server
+        """
+
+    @staticmethod
+    @abstractmethod
+    def stop_server(container: ContainerisedIrodsServer):
+        """
+        Stops the given containerised iRODS server.
+        :param container: the containerised iRODS server to stop
+        """
+
+    @staticmethod
+    @abstractmethod
+    def write_connection_settings(file_location: str, irods_server: IrodsServer):
+        """
+        Writes the connection settings for the given iRODS server to the given location.
+        :param file_location: the location to write the settings to (file should not already exist)
+        :param irods_server: the iRODS server to create the connection settings for
+        """
+
+
 class IrodsServerController(metaclass=ABCMeta):
     """
     Controller for containerised iRODS servers.
@@ -95,7 +125,8 @@ class IrodsServerController(metaclass=ABCMeta):
 
     def stop_server(self, container: ContainerisedIrodsServer):
         """
-        Stops the containerised iRODS server.
+        Stops the given containerised iRODS server.
+        :param container: the containerised iRODS server to stop
         """
         try:
             if container is not None:
@@ -144,3 +175,22 @@ class IrodsServerController(metaclass=ABCMeta):
         IrodsServerController._cache_started_container(container, image_name)
 
         return container
+
+
+def create_static_irods_server_controller(irods_server_controller: IrodsServerController) \
+        -> StaticIrodsServerController:
+    """
+    Creates a static iRODS server controller from the given iRODS server controller. This essentially makes the given
+    controller a singleton in a (static) sheep's clothing.
+    :param irods_server_controller:
+    :return:
+    """
+    static_controller = type(
+        "%sFactory" % type(irods_server_controller).__name__.replace("Controller", ""),
+        (StaticIrodsServerController,),
+        dict()
+    )
+    static_controller.start_server = irods_server_controller.start_server
+    static_controller.stop_server = irods_server_controller.stop_server
+    static_controller.write_connection_settings = irods_server_controller.write_connection_settings
+    return static_controller

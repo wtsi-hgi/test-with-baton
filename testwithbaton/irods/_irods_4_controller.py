@@ -3,7 +3,7 @@ import logging
 import os
 from abc import ABCMeta
 
-from testwithbaton.irods._irods_contoller import IrodsServerController
+from testwithbaton.irods._irods_contoller import IrodsServerController, create_static_irods_server_controller
 from testwithbaton.models import IrodsServer, ContainerisedIrodsServer, IrodsUser, Version
 
 _IRODS_CONFIG_FILE_NAME = "irods_environment.json"
@@ -14,7 +14,7 @@ _IRODS_USERNAME_PARAMETER_NAME = "irods_user_name"
 _IRODS_ZONE_PARAMETER_NAME = "irods_zone_name"
 
 
-class Irods4ServerController(IrodsServerController, metaclass=ABCMeta):
+class _Irods4ServerController(IrodsServerController, metaclass=ABCMeta):
     """
     Controller for containerised iRODS 4 servers.
     """
@@ -35,7 +35,7 @@ class Irods4ServerController(IrodsServerController, metaclass=ABCMeta):
             settings_file.write(config_as_json)
 
 
-class Irods4_1_8ServerController(Irods4ServerController):
+class Irods4_1_8ServerController(_Irods4ServerController):
     """
     Controller for containerised iRODS 4.1.8 servers.
     """
@@ -47,7 +47,7 @@ class Irods4_1_8ServerController(Irods4ServerController):
 
     def start_server(self) -> ContainerisedIrodsServer:
         return self._start_server(Irods4_1_8ServerController._IMAGE_NAME, Irods4_1_8ServerController._VERSION,
-                           Irods4_1_8ServerController._USERS)
+                                  Irods4_1_8ServerController._USERS)
 
     def _wait_for_start(self, container: ContainerisedIrodsServer) -> bool:
         logging.info("Waiting for iRODS server to have setup")
@@ -57,3 +57,7 @@ class Irods4_1_8ServerController(Irods4ServerController):
                 return True
             elif "iRODS server failed to start." in str(line):
                 return False
+
+
+# Static iRODS 4.1.8 server controller, implemented (essentially) using a `Irods4_1_8ServerController` singleton
+StaticIrods4_1_8ServerController = create_static_irods_server_controller(Irods4_1_8ServerController())

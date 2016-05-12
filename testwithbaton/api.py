@@ -7,7 +7,7 @@ from typing import Union
 from testwithbaton._baton import build_baton_docker
 from testwithbaton._common import create_client
 from testwithbaton._proxies import BatonProxyController, ICommandProxyController
-from testwithbaton.irods import get_irods_server_controller, IrodsVersion
+from testwithbaton.irods import get_static_irods_server_controller, IrodsVersion
 from testwithbaton.models import IrodsServer, IrodsUser, BatonImage
 
 
@@ -92,7 +92,6 @@ class TestWithBaton:
 
         self.irods_server = irods_server
         self._irods_version_to_start = irods_version_to_start
-        self._irods_server_controller = None
         self._state = TestWithBaton._SetupState.INIT
         self._baton_docker_build = baton_image
 
@@ -128,8 +127,7 @@ class TestWithBaton:
 
         if self._irods_version_to_start:
             logging.debug("Starting iRODS test server")
-            self._irods_server_controller = get_irods_server_controller(self._irods_version_to_start)
-            self.irods_server = self._irods_server_controller.start_server()
+            self.irods_server = get_static_irods_server_controller(self._irods_version_to_start).start_server()
             logging.debug("iRODS test server has started")
         else:
             logging.debug("Using pre-existing iRODS server")
@@ -157,9 +155,9 @@ class TestWithBaton:
             self._state = TestWithBaton._SetupState.STOPPED
             atexit.unregister(self.tear_down)
 
-            if self.irods_server is not None and self._irods_server_controller is not None:
+            if self._irods_version_to_start is not None:
                 logging.debug("Stopping iRODS server")
-                self._irods_server_controller.stop_server(self.irods_server)
+                get_static_irods_server_controller(self._irods_version_to_start).stop_server(self.irods_server)
                 self.irods_server = None
             else:
                 logging.debug("External iRODS test server used - not tearing down")

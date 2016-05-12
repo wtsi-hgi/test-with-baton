@@ -1,14 +1,12 @@
 import unittest
 from abc import ABCMeta, abstractmethod
 
-from docker import client
-
 from testwithbaton._common import create_client
 from testwithbaton._proxies import ICommandProxyController
 from testwithbaton.helpers import SetupHelper
-from testwithbaton.irods import IrodsServerController
 from testwithbaton.irods._irods_3_controller import Irods3_3_1ServerController
 from testwithbaton.irods._irods_4_controller import Irods4_1_8ServerController
+from testwithbaton.irods._irods_contoller import IrodsServerController
 from testwithbaton.models import ContainerisedIrodsServer, Version
 
 
@@ -70,7 +68,7 @@ class TestIrodsServerController(unittest.TestCase, metaclass=ABCMeta):
 
 class TestIrods3ServerController(TestIrodsServerController, metaclass=ABCMeta):
     """
-    Tests for `Irods3ServerController`.
+    Tests for `_Irods3ServerController`.
     """
     _BATON_IMAGE = "mercury/baton:0.16.3-with-irods-3.3.1"
 
@@ -93,7 +91,7 @@ class TestIrods3_3_1ServerController(TestIrods3ServerController):
 
 class TestIrods4ServerController(TestIrodsServerController, metaclass=ABCMeta):
     """
-    Tests for `Irods4ServerController`.
+    Tests for `_Irods4ServerController`.
     """
     _BATON_IMAGE = "mercury/baton:0.16.3-with-irods-4.1.8"
 

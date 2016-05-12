@@ -3,7 +3,7 @@ import os
 from abc import ABCMeta
 from time import sleep
 
-from testwithbaton.irods._irods_contoller import IrodsServerController
+from testwithbaton.irods._irods_contoller import IrodsServerController, create_static_irods_server_controller
 from testwithbaton.models import IrodsServer, ContainerisedIrodsServer, IrodsUser, Version
 
 _IRODS_CONFIG_FILE_NAME = ".irodsEnv"
@@ -14,7 +14,7 @@ _IRODS_USERNAME_PARAMETER_NAME = "irodsUserName"
 _IRODS_ZONE_PARAMETER_NAME = "irodsZone"
 
 
-class Irods3ServerController(IrodsServerController, metaclass=ABCMeta):
+class _Irods3ServerController(IrodsServerController, metaclass=ABCMeta):
     """
     Controller for containerised iRODS 3 servers.
     """
@@ -34,7 +34,7 @@ class Irods3ServerController(IrodsServerController, metaclass=ABCMeta):
             settings_file.write('\n'.join(["%s %s" % x for x in config]))
 
 
-class Irods3_3_1ServerController(Irods3ServerController):
+class Irods3_3_1ServerController(_Irods3ServerController):
     """
     Controller for containerised iRODS 3.3.1 servers.
     """
@@ -46,7 +46,7 @@ class Irods3_3_1ServerController(Irods3ServerController):
 
     def start_server(self) -> ContainerisedIrodsServer:
         return self._start_server(Irods3_3_1ServerController._IMAGE_NAME, Irods3_3_1ServerController._VERSION,
-                           Irods3_3_1ServerController._USERS)
+                                  Irods3_3_1ServerController._USERS)
 
     def _wait_for_start(self, container: ContainerisedIrodsServer) -> bool:
         logging.info("Waiting for iRODS server to have setup")
@@ -67,3 +67,7 @@ class Irods3_3_1ServerController(Irods3ServerController):
             sleep(0.1)
 
         return True
+
+
+# Static iRODS 3.3.1 server controller, implemented (essentially) using a `Irods3_3_1ServerController` singleton
+StaticIrods3_3_1ServerController = create_static_irods_server_controller(Irods3_3_1ServerController())
