@@ -44,6 +44,7 @@ class IrodsServerController(metaclass=ABCMeta):
     Controller for containerised iRODS servers.
     """
     _DOCKER_CLIENT = create_client()
+    _DEFAULT_IRODS_PORT = 1247
 
     @staticmethod
     def _create_container(image_name: str, irods_version: Version, users: Sequence[IrodsUser]) \
@@ -71,13 +72,15 @@ class IrodsServerController(metaclass=ABCMeta):
         container_name = create_unique_name("irods")
         logging.info("Creating iRODs server Docker container: %s" % container_name)
         container = IrodsServerController._DOCKER_CLIENT.create_container(
-            image=docker_image, name=container_name, ports=[1247])
+            image=docker_image, name=container_name, ports=[IrodsServerController._DEFAULT_IRODS_PORT])
 
         irods_server = ContainerisedIrodsServer()
         irods_server.native_object = container
         irods_server.name = container_name
+        irods_server.host = container_name
         irods_server.version = irods_version
         irods_server.users = users
+        irods_server.port = IrodsServerController._DEFAULT_IRODS_PORT
         return irods_server
 
     @staticmethod

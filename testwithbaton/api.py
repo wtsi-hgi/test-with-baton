@@ -6,7 +6,7 @@ from typing import Union
 
 from testwithbaton._baton import build_baton_docker
 from testwithbaton._common import create_client
-from testwithbaton._proxies import BatonProxyController, ICommandProxyController
+from testwithbaton.proxies import BatonProxyController, ICommandProxyController
 from testwithbaton.irods import get_static_irods_server_controller, IrodsVersion
 from testwithbaton.models import IrodsServer, IrodsUser, BatonImage
 

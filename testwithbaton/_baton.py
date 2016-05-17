@@ -11,7 +11,7 @@ def build_baton_docker(docker_client: Client, baton_docker_build: BatonImage):
     :param docker_client: the Docker client
     :param baton_docker_build: where the baton docker is built from
     """
-    logging.info("Building baton test Docker image - if this is not cached, it will take a few minutes")
+    logging.info("Building baton Docker image - if this is not cached, it will take a few minutes")
     logging.debug("baton Docker build: %s" % baton_docker_build)
     # Note: reading the lines in this ways enforces that Python blocks - required
     response = [line for line in docker_client.build(tag=baton_docker_build.tag,

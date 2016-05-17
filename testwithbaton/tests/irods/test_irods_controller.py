@@ -2,7 +2,7 @@ import unittest
 from abc import ABCMeta, abstractmethod
 
 from testwithbaton._common import create_client
-from testwithbaton._proxies import ICommandProxyController
+from testwithbaton.proxies import ICommandProxyController
 from testwithbaton.helpers import SetupHelper
 from testwithbaton.irods._irods_3_controller import Irods3_3_1ServerController
 from testwithbaton.irods._irods_4_controller import Irods4_1_8ServerController
