@@ -8,8 +8,11 @@ from testwithbaton.helpers import SetupHelper, AccessLevel
 from testwithbaton.models import IrodsUser
 from testwithbaton.tests._common import create_tests_for_all_baton_setups, BatonSetupContainer
 
-_METADATA = Metadata(
-        {"attribute_1": ["value_1", "value_2"], "attribute_2": ["value_3", "value_4"], "attribute_3": "value_5"})
+_METADATA = Metadata({
+    "attribute_1": ["value_1", "value_2"],
+    "attribute_2": ["value_3", "value_4"],
+    "attribute_3": "value_5"
+})
 _DATA_OBJECT_NAME = "data-object-name"
 
 
