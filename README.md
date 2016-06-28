@@ -112,7 +112,7 @@ setup_helper.run_icommand(["icommand_binary", "--any", "arguments"])    # type: 
 To use outside of Python, run (from the repository's root directory) with:
 ```bash
 pip3 install -r requirements.txt
-PYTHONPATH=. python3 testwithbaton/main.py
+PYTHONPATH=. python3 testwithbaton/main.py --baton "<version>" --irods "<version>"
 ``` 
 
 The program will setup and then output (on one line):
