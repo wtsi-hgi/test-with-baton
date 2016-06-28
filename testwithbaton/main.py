@@ -40,7 +40,7 @@ def _get_baton_setup(baton_version: str, irods_version: str) -> BatonSetup:
     :return: the baton setup
     """
     baton_setup_as_string = "v%s_WITH_IRODS_%s" % (baton_version.replace(".", "_"), irods_version.replace(".", "_"))
-    if baton_setup_as_string not in BatonSetup:
+    if baton_setup_as_string not in BatonSetup.__dict__:
         raise ValueError("No setup for baton version %s and iRODS version %s" % (baton_version, irods_version))
     return BatonSetup.__dict__[baton_setup_as_string]
 
