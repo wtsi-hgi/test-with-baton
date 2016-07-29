@@ -1,7 +1,7 @@
 from enum import Enum, unique
 
 from testwithbaton.irods._irods_3_controller import StaticIrods3_3_1ServerController
-from testwithbaton.irods._irods_4_controller import StaticIrods4_1_8ServerController
+from testwithbaton.irods._irods_4_controller import StaticIrods4_1_8ServerController, StaticIrods4_1_9ServerController
 from testwithbaton.irods._irods_contoller import StaticIrodsServerController
 
 
@@ -12,6 +12,7 @@ class IrodsVersion(Enum):
     """
     v3_3_1 = StaticIrods3_3_1ServerController
     v4_1_8 = StaticIrods4_1_8ServerController
+    v4_1_9 = StaticIrods4_1_9ServerController
 
 
 def get_static_irods_server_controller(irods_version: IrodsVersion=IrodsVersion.v3_3_1) -> StaticIrodsServerController:
