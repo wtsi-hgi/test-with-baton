@@ -1,5 +1,5 @@
 # Change Log
-## [Unreleased]
+## 1.0.0 - 2016-06-28
 ### Added
 - Ability to define version of iCAT server that should be setup.
 - Support for iRODS 4.
