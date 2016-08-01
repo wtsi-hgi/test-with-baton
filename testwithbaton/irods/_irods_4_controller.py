@@ -70,8 +70,8 @@ class Irods4_1_9ServerController(_Irods4ServerController):
     _VERSION = Version("4.1.9")
 
     def start_server(self) -> ContainerisedIrodsServer:
-        return self._start_server(Irods4_1_8ServerController._IMAGE_NAME, Irods4_1_8ServerController._VERSION,
-                                  Irods4_1_8ServerController._USERS)
+        return self._start_server(Irods4_1_9ServerController._IMAGE_NAME, Irods4_1_9ServerController._VERSION,
+                                  Irods4_1_9ServerController._USERS)
 
 
 # Static iRODS server controllers, implemented (essentially) using singletons
