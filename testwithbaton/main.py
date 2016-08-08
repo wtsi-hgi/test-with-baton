@@ -8,12 +8,12 @@ from testwithbaton.api import TestWithBaton, BatonSetup
 
 _PROGRAM_DESCRIPTION = "Sets up version of baton connected to an iRODS server for use in testing"
 _PROGRAM_BATON_VERSION_PARAMETER_NAME = "baton"
-_PROGRAM_BATON_VERSION_PARAMETER_HELP = "Version of baton to setup: [0.16.1, 0.16.2, 0.16.3]"
+_PROGRAM_BATON_VERSION_PARAMETER_HELP = "Version of baton to setup: [0.16.1, 0.16.2, 0.16.3, 0.16.4]"
 _PROGRAM_IRODS_VERSION_PARAMETER_NAME = "irods"
-_PROGRAM_IRODS_VERSION_PARAMETER_HELP = "Version of iRODS to setup: [3.3.1, 4.1.8]"
+_PROGRAM_IRODS_VERSION_PARAMETER_HELP = "Version of iRODS to setup: [3.3.1, 4.1.8, 4.1.9]"
 
-_DEFAULT_BATON_VERSION = "0.16.3"
-_DEFAULT_IRODS_VERSION = "3.3.1"
+_DEFAULT_BATON_VERSION = "0.16.4"
+_DEFAULT_IRODS_VERSION = "4.1.9"
 
 
 def _parse_arguments() -> (str, str):

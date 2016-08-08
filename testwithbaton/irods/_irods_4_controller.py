@@ -34,6 +34,15 @@ class _Irods4ServerController(IrodsServerController, metaclass=ABCMeta):
         with open(file_location, 'w') as settings_file:
             settings_file.write(config_as_json)
 
+    def _wait_for_start(self, container: ContainerisedIrodsServer) -> bool:
+        logging.info("Waiting for iRODS server to have setup")
+        for line in IrodsServerController._DOCKER_CLIENT.logs(container.native_object, stream=True):
+            logging.debug(line)
+            if "iRODS server started successfully!" in str(line):
+                return True
+            elif "iRODS server failed to start." in str(line):
+                return False
+
 
 class Irods4_1_8ServerController(_Irods4ServerController):
     """
@@ -49,15 +58,22 @@ class Irods4_1_8ServerController(_Irods4ServerController):
         return self._start_server(Irods4_1_8ServerController._IMAGE_NAME, Irods4_1_8ServerController._VERSION,
                                   Irods4_1_8ServerController._USERS)
 
-    def _wait_for_start(self, container: ContainerisedIrodsServer) -> bool:
-        logging.info("Waiting for iRODS server to have setup")
-        for line in IrodsServerController._DOCKER_CLIENT.logs(container.native_object, stream=True):
-            logging.debug(line)
-            if "iRODS server started successfully!" in str(line):
-                return True
-            elif "iRODS server failed to start." in str(line):
-                return False
+
+class Irods4_1_9ServerController(_Irods4ServerController):
+    """
+    Controller for containerised iRODS 4.1.9 servers.
+    """
+    _IMAGE_NAME = "mercury/icat:4.1.9"
+    _USERS = [
+        IrodsUser("rods", "testZone", "irods123", admin=True)
+    ]
+    _VERSION = Version("4.1.9")
+
+    def start_server(self) -> ContainerisedIrodsServer:
+        return self._start_server(Irods4_1_9ServerController._IMAGE_NAME, Irods4_1_9ServerController._VERSION,
+                                  Irods4_1_9ServerController._USERS)
 
 
-# Static iRODS 4.1.8 server controller, implemented (essentially) using a `Irods4_1_8ServerController` singleton
+# Static iRODS server controllers, implemented (essentially) using singletons
 StaticIrods4_1_8ServerController = create_static_irods_server_controller(Irods4_1_8ServerController())
+StaticIrods4_1_9ServerController = create_static_irods_server_controller(Irods4_1_9ServerController())

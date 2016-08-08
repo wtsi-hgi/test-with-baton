@@ -5,7 +5,7 @@ from testwithbaton._common import create_client
 from testwithbaton.proxies import ICommandProxyController
 from testwithbaton.helpers import SetupHelper
 from testwithbaton.irods._irods_3_controller import Irods3_3_1ServerController
-from testwithbaton.irods._irods_4_controller import Irods4_1_8ServerController
+from testwithbaton.irods._irods_4_controller import Irods4_1_8ServerController, Irods4_1_9ServerController
 from testwithbaton.irods._irods_contoller import IrodsServerController
 from testwithbaton.models import ContainerisedIrodsServer, Version
 
@@ -66,56 +66,59 @@ class TestIrodsServerController(unittest.TestCase, metaclass=ABCMeta):
         self.assertFalse(self._is_container_running(irods_container))
 
 
-class TestIrods3ServerController(TestIrodsServerController, metaclass=ABCMeta):
-    """
-    Tests for `_Irods3ServerController`.
-    """
-    _BATON_IMAGE = "mercury/baton:0.16.3-with-irods-3.3.1"
-
-    def __init__(self, irods_version: Version, *args, **kwargs):
-        super().__init__(self._BATON_IMAGE, irods_version, *args, **kwargs)
-
-
-class TestIrods3_3_1ServerController(TestIrods3ServerController):
+class TestIrods3_3_1ServerController(TestIrodsServerController):
     """
     Tests for `Irods3_3_1ServerController`.
     """
+    _BATON_IMAGE = "mercury/baton:0.16.3-with-irods-3.3.1"
     _IRODS_VERSION = "3.3.1"
 
     def __init__(self, *args, **kwargs):
-        super().__init__(Version(self._IRODS_VERSION), *args, **kwargs)
+        super().__init__(
+            TestIrods3_3_1ServerController._BATON_IMAGE,
+            Version(TestIrods3_3_1ServerController._IRODS_VERSION),
+            *args, **kwargs)
 
     def create_controller(self) -> IrodsServerController:
         return Irods3_3_1ServerController()
 
 
-class TestIrods4ServerController(TestIrodsServerController, metaclass=ABCMeta):
-    """
-    Tests for `_Irods4ServerController`.
-    """
-    _BATON_IMAGE = "mercury/baton:0.16.3-with-irods-4.1.8"
-
-    def __init__(self, irods_version: Version, *args, **kwargs):
-        super().__init__(self._BATON_IMAGE, irods_version, *args, **kwargs)
-
-
-class TestIrods4_1_8ServerController(TestIrods4ServerController):
+class TestIrods4_1_8ServerController(TestIrodsServerController):
     """
     Tests for `Irods4_1_8ServerController`.
     """
+    _BATON_IMAGE = "mercury/baton:0.16.3-with-irods-4.1.8"
     _IRODS_VERSION = "4.1.8"
 
     def __init__(self, *args, **kwargs):
-        super().__init__(Version(self._IRODS_VERSION), *args, **kwargs)
+        super().__init__(
+            TestIrods4_1_8ServerController._BATON_IMAGE,
+            Version(TestIrods4_1_8ServerController._IRODS_VERSION),
+            *args, **kwargs)
 
     def create_controller(self) -> IrodsServerController:
         return Irods4_1_8ServerController()
 
 
-# Required to stop unittest from running the
+class TestIrods4_1_9ServerController(TestIrodsServerController):
+    """
+    Tests for `Irods4_1_8ServerController`.
+    """
+    _BATON_IMAGE = "mercury/baton:0.16.4-with-irods-4.1.9"
+    _IRODS_VERSION = "4.1.9"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            TestIrods4_1_9ServerController._BATON_IMAGE,
+            Version(TestIrods4_1_9ServerController._IRODS_VERSION),
+            *args, **kwargs)
+
+    def create_controller(self) -> IrodsServerController:
+        return Irods4_1_9ServerController()
+
+
+# Required to stop unittest from running the abstract base class
 del TestIrodsServerController
-del TestIrods3ServerController
-del TestIrods4ServerController
 
 
 if __name__ == "__main__":
