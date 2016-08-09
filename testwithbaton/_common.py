@@ -7,7 +7,6 @@ from docker import Client
 from docker.tls import TLSConfig
 from docker.utils import kwargs_from_env
 
-logging.root.setLevel(logging.DEBUG)
 _client = None
 
 

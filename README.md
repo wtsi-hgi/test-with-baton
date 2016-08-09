@@ -127,13 +127,16 @@ It will then block, keeping the test environment alive, until it receives a `SIG
 signal, the test environment is torn down and then the program will exit.
 
 
-### Setting up with PyCharm IDE
-The environment must be [setup for configurations in PyCharm]
-(https://www.jetbrains.com/pycharm/help/run-debug-configuration-python.html#d427982e277) that run projects that use
-`testwithbaton` in order for Docker to be used. In particular, `DOCKER_TLS_VERIFY`, `DOCKER_HOST` and `DOCKER_CERT_PATH`
-must be set. For example, the configuration's environment variables may include:
-```
+## Specifying the Docker Daemon
+It is possible to specify the Docker daemon that you wish to use by setting environment variables. In particular, 
+`DOCKER_TLS_VERIFY`, `DOCKER_HOST` and `DOCKER_CERT_PATH` can be set. For example, the configuration's environment
+variables could be:
+```bash
 DOCKER_TLS_VERIFY=1
 DOCKER_HOST=tcp://192.168.99.100:2376
 DOCKER_CERT_PATH=/Users/you/.docker/machine/machines/default
 ```
+*[Information on how to set these variables in Pycharm.](https://www.jetbrains.com/pycharm/help/run-debug-configuration-python.html#d427982e277)*
+
+If these variables are not set, it is assumed the daemon is accessible via the default UNIX socket: 
+`unix:///var/run/docker.sock`.
