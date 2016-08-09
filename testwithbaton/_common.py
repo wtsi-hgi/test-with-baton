@@ -52,7 +52,7 @@ def create_client() -> Client:
                 raise ConnectionError(
                     "Cannot connect to Docker - is the Docker daemon running? `$DOCKER_HOST` should be set or the "
                     "daemon should be accessible via the standard UNIX socket.")
-            _client = weakref.ref(client)
+        _client = weakref.ref(client)
     client = _client()
     assert isinstance(client, Client)
     return client
