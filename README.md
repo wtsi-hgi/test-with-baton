@@ -137,3 +137,27 @@ DOCKER_TLS_VERIFY=1
 DOCKER_HOST=tcp://192.168.99.100:2376
 DOCKER_CERT_PATH=/Users/you/.docker/machine/machines/default
 ```
+
+
+## Development
+### Setup
+Install both the library dependencies and the dependencies needed for testing:
+```bash
+$ pip3 install -q -r requirements.txt
+$ pip3 install -q -r test_requirements.txt
+```
+
+### Testing
+Using nosetests, in the project directory, run:
+```bash
+$ nosetests -v --exclude-test=testwithbaton.tests._common.create_tests_for_all_baton_setups
+```
+
+To generate a test coverage report with nosetests:
+```bash
+$ nosetests -v --with-coverage --cover-package=testwithbaton --cover-inclusive --exclude-test=testwithbaton.tests._common.create_tests_for_all_baton_setups
+```
+
+To limit testing to a specific version of baton and iRODS, set the environment variable `SINGLE_TEST_SETUP` to match 
+the name of the `BatonSetup` enum assocaited to the setup that you wish to test, e.g. 
+`SINGLE_TEST_SETUP=v0_16_2_WITH_IRODS_4_1_8`.
