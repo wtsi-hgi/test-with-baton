@@ -33,21 +33,6 @@ class _Irods3ServerController(IrodsServerController, metaclass=ABCMeta):
         with open(file_location, 'w') as settings_file:
             settings_file.write('\n'.join(["%s %s" % x for x in config]))
 
-
-class Irods3_3_1ServerController(_Irods3ServerController):
-    """
-    Controller for containerised iRODS 3.3.1 servers.
-    """
-    _IMAGE_NAME = "mercury/icat:3.3.1"
-    _USERS = [
-        IrodsUser("rods", "iplant", "rods", admin=True)
-    ]
-    _VERSION = Version("3.3.1")
-
-    def start_server(self) -> ContainerisedIrodsServer:
-        return self._start_server(Irods3_3_1ServerController._IMAGE_NAME, Irods3_3_1ServerController._VERSION,
-                                  Irods3_3_1ServerController._USERS)
-
     def _wait_for_start(self, container: ContainerisedIrodsServer) -> bool:
         logging.info("Waiting for iRODS server to have setup")
         for line in IrodsServerController._DOCKER_CLIENT.logs(container.native_object, stream=True):
@@ -67,6 +52,21 @@ class Irods3_3_1ServerController(_Irods3ServerController):
             sleep(0.1)
 
         return True
+
+
+class Irods3_3_1ServerController(_Irods3ServerController):
+    """
+    Controller for containerised iRODS 3.3.1 servers.
+    """
+    _IMAGE_NAME = "mercury/icat:3.3.1"
+    _USERS = [
+        IrodsUser("rods", "iplant", "rods", admin=True)
+    ]
+    _VERSION = Version("3.3.1")
+
+    def start_server(self) -> ContainerisedIrodsServer:
+        return self._start_server(Irods3_3_1ServerController._IMAGE_NAME, Irods3_3_1ServerController._VERSION,
+                                  Irods3_3_1ServerController._USERS)
 
 
 # Static iRODS 3.3.1 server controller, implemented (essentially) using a `Irods3_3_1ServerController` singleton

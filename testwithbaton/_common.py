@@ -7,7 +7,7 @@ from docker import Client
 from docker.tls import TLSConfig
 from docker.utils import kwargs_from_env
 
-_client = None
+_client = lambda:None
 
 
 def _create_client(base_url: str, tls: TLSConfig=False) -> Optional[Client]:
@@ -32,7 +32,8 @@ def create_client() -> Client:
     :return: the Docker client
     """
     global _client
-    if _client is None:
+    client = _client()
+    if client is None:
         # First try looking at the environment variables for specification of the daemon's location
         docker_environment = kwargs_from_env(assert_hostname=False)
         if "base_url" in docker_environment:
@@ -53,7 +54,6 @@ def create_client() -> Client:
                     "Cannot connect to Docker - is the Docker daemon running? `$DOCKER_HOST` should be set or the "
                     "daemon should be accessible via the standard UNIX socket.")
         _client = weakref.ref(client)
-    client = _client()
     assert isinstance(client, Client)
     return client
 
