@@ -140,9 +140,10 @@ class IrodsServerController(metaclass=ABCMeta):
 
     def create_connection_settings_volume(self, config_file_name: str, irods_server: IrodsServer) -> str:
         """
-        TODO
-        :param config_file_name:
-        :param irods_server:
+        Creates a directory with iRODS config settings that can be used to supply the iRODS settings if mounted as a
+        volume at `~/.irods`.
+        :param config_file_name: the name of the configuration file to write
+        :param irods_server: the iRODS server that is being connected to
         """
         temp_directory = tempfile.mkdtemp(prefix="irods-config-")
         logging.info("Created temp directory for iRODS config: %s" % temp_directory)
@@ -155,9 +156,10 @@ class IrodsServerController(metaclass=ABCMeta):
     def _start_server(self, image_name: str, irods_version: Version, users: Sequence[IrodsUser]) \
             -> ContainerisedIrodsServer:
         """
-        TODO
-
         Starts a containerised iRODS server and blocks until it is ready to be used.
+        :param image_name: the name of the iRODS server to start
+        :param irods_version: the version of iRODS that is being started
+        :param users: the users that have access to the started iRODS service
         :return: the started containerised iRODS server
         """
         logging.info("Starting iRODS server in Docker container")

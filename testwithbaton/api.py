@@ -78,9 +78,9 @@ class TestWithBaton:
         """
         Constructor.
         :param baton_image: baton Docker image that is to be used
-        :param irods_version_to_start:
-        :param irods_server:
-        :param baton_setup:
+        :param irods_version_to_start: the version of iRODS to start (if any)
+        :param irods_server: the started iRODS server ot use (if any)
+        :param baton_setup: the baton setup to use (if any)
         """
         if baton_setup is not None:
             baton_image = baton_setup.value[0]
@@ -174,7 +174,7 @@ class TestWithBaton:
 
     def _tear_down_proxies(self):
         """
-        TODO
+        Tears down the baton and icommand proxy binaries.
         """
         if self._baton_binary_proxy_controller is not None:
             self._baton_binary_proxy_controller.tear_down()
