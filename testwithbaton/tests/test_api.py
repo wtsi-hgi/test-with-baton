@@ -5,8 +5,8 @@ from abc import ABCMeta
 
 import testwithbaton
 from testwithbaton.api import TestWithBaton, get_irods_server_from_environment_if_defined, IrodsEnvironmentKey
-from testwithbaton.helpers import SetupHelper
 from testwithbaton.tests._common import BatonSetupContainer, create_tests_for_all_baton_setups
+from testwithirods.helpers import SetupHelper
 
 
 class TestTestWithBaton(unittest.TestCase, BatonSetupContainer, metaclass=ABCMeta):

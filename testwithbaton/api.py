@@ -4,11 +4,13 @@ import os
 from enum import Enum, unique
 from typing import Union
 
+from hgicommon.docker.client import create_client
 from testwithbaton._baton import build_baton_docker
-from testwithbaton._common import create_client
-from testwithbaton.proxies import BatonProxyController, ICommandProxyController
-from testwithbaton.irods import get_static_irods_server_controller, IrodsVersion
-from testwithbaton.models import IrodsServer, IrodsUser, BatonImage
+from testwithbaton.models import BatonImage
+from testwithbaton.proxies import BatonProxyController
+from testwithirods.api import IrodsVersion, get_static_irods_server_controller
+from testwithirods.models import IrodsServer, IrodsUser
+from testwithirods.proxies import ICommandProxyController
 
 
 @unique

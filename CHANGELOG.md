@@ -1,4 +1,9 @@
 # Change Log
+## [Unreleased 2.x]
+### Changed
+- Split off iRODS server setup into [test-with-irods repository](https://github.com/wtsi-hgi/test-with-irods).
+
+
 ## 1.0.0 - 2016-06-28
 ### Added
 - Ability to define version of iCAT server that should be setup.
