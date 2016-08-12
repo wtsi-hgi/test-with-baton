@@ -1,2 +1,0 @@
-from testwithbaton.irods._irods_contoller import StaticIrodsServerController
-from testwithbaton.irods._api import IrodsVersion, get_static_irods_server_controller
