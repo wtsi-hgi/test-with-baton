@@ -48,30 +48,30 @@ class Irods4_1_8ServerController(_Irods4ServerController):
     """
     Controller for containerised iRODS 4.1.8 servers.
     """
-    _IMAGE_NAME = "mercury/icat:4.1.8"
-    _USERS = [
+    IMAGE_NAME = "mercury/icat:4.1.8"
+    USERS = [
         IrodsUser("rods", "testZone", "irods123", admin=True)
     ]
-    _VERSION = Version("4.1.8")
+    VERSION = Version("4.1.8")
 
     def start_server(self) -> ContainerisedIrodsServer:
-        return self._start_server(Irods4_1_8ServerController._IMAGE_NAME, Irods4_1_8ServerController._VERSION,
-                                  Irods4_1_8ServerController._USERS)
+        return self._start_server(Irods4_1_8ServerController.IMAGE_NAME, Irods4_1_8ServerController.VERSION,
+                                  Irods4_1_8ServerController.USERS)
 
 
 class Irods4_1_9ServerController(_Irods4ServerController):
     """
     Controller for containerised iRODS 4.1.9 servers.
     """
-    _IMAGE_NAME = "mercury/icat:4.1.9"
-    _USERS = [
+    IMAGE_NAME = "mercury/icat:4.1.9"
+    USERS = [
         IrodsUser("rods", "testZone", "irods123", admin=True)
     ]
-    _VERSION = Version("4.1.9")
+    VERSION = Version("4.1.9")
 
     def start_server(self) -> ContainerisedIrodsServer:
-        return self._start_server(Irods4_1_9ServerController._IMAGE_NAME, Irods4_1_9ServerController._VERSION,
-                                  Irods4_1_9ServerController._USERS)
+        return self._start_server(Irods4_1_9ServerController.IMAGE_NAME, Irods4_1_9ServerController.VERSION,
+                                  Irods4_1_9ServerController.USERS)
 
 
 # Static iRODS server controllers, implemented (essentially) using singletons

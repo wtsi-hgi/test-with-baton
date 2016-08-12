@@ -58,15 +58,15 @@ class Irods3_3_1ServerController(_Irods3ServerController):
     """
     Controller for containerised iRODS 3.3.1 servers.
     """
-    _IMAGE_NAME = "mercury/icat:3.3.1"
-    _USERS = [
+    IMAGE_NAME = "mercury/icat:3.3.1"
+    USERS = [
         IrodsUser("rods", "iplant", "rods", admin=True)
     ]
-    _VERSION = Version("3.3.1")
+    VERSION = Version("3.3.1")
 
     def start_server(self) -> ContainerisedIrodsServer:
-        return self._start_server(Irods3_3_1ServerController._IMAGE_NAME, Irods3_3_1ServerController._VERSION,
-                                  Irods3_3_1ServerController._USERS)
+        return self._start_server(Irods3_3_1ServerController.IMAGE_NAME, Irods3_3_1ServerController.VERSION,
+                                  Irods3_3_1ServerController.USERS)
 
 
 # Static iRODS 3.3.1 server controller, implemented (essentially) using a `Irods3_3_1ServerController` singleton
