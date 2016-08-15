@@ -13,7 +13,8 @@ a clean iRODS installation (pre-existing iRODS installations can be used if requ
 used in the testing of software that depends on baton or for just seeing how iRODS and baton work in a safe environment.
 
 Thanks to the use [wtsi-hgi's baton Docker image](https://github.com/wtsi-hgi/docker-baton) and
-[wtsi-hgi's iRODS server Docker image](https://hub.docker.com/r/mercury/icat), the configuration of the test machine
+[wtsi-hgi's iRODS server Docker image](https://hub.docker.com/r/mercury/icat), controlled via the 
+[test-with-irods library](https://github.com/wtsi-hgi/test-with-irods), the configuration of the test machine
 is not changed upon use of this software. 
 
 By default, a new iRODS server (running in Docker on an unused port), with a clean database, is used. If this fresh
@@ -65,10 +66,10 @@ It is possible to use a pre-existing iRODS server in tests. This will make it qu
 environment that they run in can no longer be guaranteed, potentially making your tests flaky.
 ```python
 from testwithbaton.api import TestWithBaton
-from testwithbaton.models import IrodsServer, IrodsUser
+from testwithirods.models import IrodsServer, IrodsUser
 
 # Define the configuration of the pre-existing iRODS server
-irods_server = IrodsServer("host", "port", [IrodsUser("username", "password", "zone")])
+irods_server = IrodsServer("host", 1270, [IrodsUser("username", "password", "zone")])
 
 # Setup test with baton
 test_with_baton = TestWithBaton(irods_server)
@@ -89,23 +90,8 @@ test_with_baton = TestWithBaton(get_irods_server_from_environment_if_defined())
 test_with_baton.setup()
 ```
 
-To help with the setup of tests, a number of Python setup helper methods are available:
-```python
-from testwithbaton.helpers import SetupHelper, AccessLevel
-from testwithbaton.models import IrodsResource
-from testwithbaton.collections import Metadata
-
-setup_helper = SetupHelper("icommands_location")
-setup_helper.create_data_object("name", contents="contents")   # type: str
-setup_helper.replicate_data_object("/path/to/data_object, "resourceName")
-setup_helper.create_collection("name")   # type: str
-setup_helper.add_metadata_to("/path/to/entity", Metadata({"attribute": "value"})
-setup_helper.get_checksum("/path/to/entity")   # type: str
-setup_helper.create_replica_storage()   # type: IrodsResource
-setup_helper.create_user("username", "zone")    # type: IrodsUser
-setup_helper.set_access("username_or_group", level: AccessLevel.OWN, "/path/to/entity")
-setup_helper.run_icommand(["icommand_binary", "--any", "arguments"])    # type: str
-```
+To help with the setup of tests, please see the 
+[setup helpers provided by the test-with-irods library](https://github.com/wtsi-hgi/test-with-irods#setup-helpers).
 
 
 ### Elsewhere
