@@ -7,10 +7,6 @@ services:
   - docker
 
 env:
-  global:
-    - DOCKER_HOST="tcp://127.0.0.1:2375"
-    - DOCKER_TLS_VERIFY=""
-    - DOCKER_CERT_PATH=""
   matrix:
     - SINGLE_TEST_SETUP=v0_16_1_WITH_IRODS_3_3_1
     - SINGLE_TEST_SETUP=v0_16_2_WITH_IRODS_3_3_1
@@ -23,8 +19,6 @@ env:
 
 before_install:
   - pip install codecov
-  - sudo apt-get update
-  - sudo apt-get install -y -o Dpkg::Options::=--force-confdef docker-engine
 
 install:
   - pip install -r requirements.txt
