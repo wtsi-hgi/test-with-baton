@@ -1,3 +1,4 @@
+import logging
 import os
 from abc import abstractmethod
 
@@ -53,3 +54,7 @@ def create_tests_for_all_baton_setups(test_superclass: type):
     else:
         for setup in BatonSetup:
             _create_test_for_baton_setup(setup, test_superclass)
+
+
+# Turn on logging by default to better get to the bottom of Travis CI timeout issues
+logging.root.setLevel(logging.DEBUG)
