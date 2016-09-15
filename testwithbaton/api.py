@@ -117,18 +117,22 @@ class TestWithBaton:
 
         docker_client = create_client()
         if self._baton_docker_build.docker_file is not None:
-            # baton Docker image is not in Docker Hub
+            # baton Docker image is to be built from a local Dockerfile
             logging.debug("Building baton Docker")
             build_baton_docker(docker_client, self._baton_docker_build)
         else:
-            # Pull Docker image from Docker Hub - not waiting until `docker run` to prevent Docker from polluting the
+            # Ensuring Docker image is pulled - not waiting until `docker run` to prevent Docker from polluting the
             # stderr
             if ":" in self._baton_docker_build.tag:
                 repository, tag = self._baton_docker_build.tag.split(":")
             else:
                 repository = self._baton_docker_build.tag
-                tag = None
-            docker_client.pull(repository, tag)
+                tag = ""
+
+            docker_image = docker_client.images("%s:%s" % (repository, tag), quiet=True)
+            if len(docker_image) == 0:
+                # Docker image doesn't exist locally: getting from DockerHub
+                docker_client.pull(repository, tag)
 
         if self._irods_version_to_start:
             logging.debug("Starting iRODS test server")
