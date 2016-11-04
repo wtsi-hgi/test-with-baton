@@ -16,6 +16,7 @@ env:
     - SINGLE_TEST_SETUP=v0_16_4_WITH_IRODS_3_3_1
     - SINGLE_TEST_SETUP=v0_16_4_WITH_IRODS_4_1_8
     - SINGLE_TEST_SETUP=v0_16_4_WITH_IRODS_4_1_9
+    - SINGLE_TEST_SETUP=v0_17_0_WITH_IRODS_4_1_9
 
 before_install:
   - pip install codecov

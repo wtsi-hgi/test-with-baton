@@ -23,9 +23,10 @@ class BatonSetup(Enum):
     v0_16_4_WITH_IRODS_3_3_1 = (BatonImage("mercury/baton:0.16.4-with-irods-3.3.1"), IrodsVersion.v3_3_1)
     v0_16_4_WITH_IRODS_4_1_8 = (BatonImage("mercury/baton:0.16.4-with-irods-4.1.8"), IrodsVersion.v4_1_8)
     v0_16_4_WITH_IRODS_4_1_9 = (BatonImage("mercury/baton:0.16.4-with-irods-4.1.9"), IrodsVersion.v4_1_9)
+    v0_17_0_WITH_IRODS_4_1_9 = (BatonImage("mercury/baton:0.17.0-with-irods-4.1.9"), IrodsVersion.v4_1_9)
 
 LATEST_BATON_IMAGE_WITH_IRODS_3 = BatonSetup.v0_16_4_WITH_IRODS_3_3_1
-LATEST_BATON_IMAGE_WITH_IRODS_4 = BatonSetup.v0_16_4_WITH_IRODS_4_1_9
+LATEST_BATON_IMAGE_WITH_IRODS_4 = BatonSetup.v0_17_0_WITH_IRODS_4_1_9
 DEFAULT_BATON_SETUP = LATEST_BATON_IMAGE_WITH_IRODS_4
 
 
