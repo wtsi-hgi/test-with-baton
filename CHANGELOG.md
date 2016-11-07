@@ -1,6 +1,7 @@
 # Change Log
 ## [Unreleased 2.x]
 ### Changed
+- Adds support for baton 0.17.1 with iRODS 4.1.9 and 4.1.10.
 - Split off iRODS server setup into [test-with-irods repository](https://github.com/wtsi-hgi/test-with-irods).
 
 
