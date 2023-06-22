@@ -1,4 +1,4 @@
-docker-py>=1.10.6
+docker>=2.0.0
 semantic_version>=2.5.0
 hgicommon>=1.2.0
 git+https://github.com/wtsi-hgi/test-with-irods.git@da257cd36d04244a1ef244da5e98cb4fa2b7c598#egg=testwithirods

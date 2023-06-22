@@ -1,6 +1,6 @@
 import logging
 
-from docker import Client
+from docker import APIClient as Client
 
 from testwithbaton.models import BatonImage
 
